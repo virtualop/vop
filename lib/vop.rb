@@ -138,20 +138,15 @@ module Vop
     end
 
     def execute(command_name, param_values, extra = {})
-      result = execute_command(command_name, param_values, extra)
-      result[:data]
+      (result, context) = execute_command(command_name, param_values, extra)
+      result
     end
 
     def execute_command(command_name, param_values, extra = {})
       $logger.debug "+++ #{command_name} +++"
       command = @commands[command_name]
 
-      data = command.execute(param_values, extra)
-
-      response = {
-        :data => data,
-        'context' => nil
-      }
+      command.execute(param_values, extra)
     end
 
     def shutdown()

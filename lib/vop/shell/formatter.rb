@@ -1,9 +1,7 @@
 require 'pp'
 require 'terminal-table'
 
-def format_output(command, response)
-  data = response[:data]
-
+def format_output(command, data)
   if data.is_a? Array
     first_row = data.first
     if first_row.is_a? Hash

@@ -6,8 +6,13 @@ class VopShellBackend < Backend
   def initialize(op, options = {})
     @op = op
     @options = options
+    @local_context = {}
 
     reset_to_command_mode
+  end
+
+  def context
+    @local_context
   end
 
   def reset_to_command_mode
@@ -62,7 +67,7 @@ class VopShellBackend < Backend
     parts = nil
 
     if @command_selected
-      $logger.debug("asking for lookup values for command '#{@command_selected.name}' and param '#{@current_param[:name]}'")
+      #$logger.debug("asking for lookup values for command '#{@command_selected.name}' and param '#{@current_param[:name]}'")
       list = @command_selected.lookup(@current_param[:name], @collected_values)
     else
       begin
@@ -115,12 +120,15 @@ class VopShellBackend < Backend
     end
   end
 
-  def parse_command_string(command_line)
+  def parse_command_string(command_line, presets = {})
     parts = command_line.split.map { |x| x.chomp.strip }
     (command_name, *params) = parts
     command = @op.commands[command_name]
 
     param_values = Hash.new { |h,k| h[k] = [] }
+    presets.each do |k,v|
+      param_values[k] = [v]
+    end
     if params
       params.each do |param|
         if param =~ /(.+?)=(.+)/ then
@@ -157,9 +165,16 @@ class VopShellBackend < Backend
       # we're in parameter processing mode - so check which parameter
       # we've got now and switch modes if necessary
 
+      # # values could have been provided through the context
+      # # (in this case we don't have to ask again)
+      # if @collected_values.has_key? @current_param
+      #   @missing_params.shift
+      #   execute_command_if_possible
+      # end
+
       # we might have been waiting for multiple param values - check if the user finished
       # adding values by entering an empty string as value
-      if (@current_param[:multi] and command_line == "") then
+      if @current_param && (@current_param[:multi] and command_line == "") then
         @missing_params.shift
         execute_command_if_possible
       else
@@ -173,23 +188,27 @@ class VopShellBackend < Backend
         end
       end
     else
-      (unused, @command_selected, values) = parse_command_string(command_line)
+      (unused, @command_selected, values) = parse_command_string(command_line, @local_context)
 
       values.each do |key, value_list|
         begin
           value_list.each do |value|
             @current_param = @command_selected.param(key)
-            @collected_values[@current_param[:name]] << value
+            if @current_param
+              @collected_values[@current_param[:name]] << value
+            else
+              # TODO handle extra params?
+            end
           end
         rescue Exception => ex
-          # TODO probably broken
-          if @command_selected.accepts_extra_params
+          # TODO broken (error: undefined method `accepts_extra_params' for Vop::Command machines.select_machine:Vop::Command)
+          if false && @command_selected.accepts_extra_params
             puts "collecting value for extra param : #{key} => #{value}"
             @collected_values["extra_params"] = {} unless @collected_values.has_key?("extra_params")
             @collected_values["extra_params"][key] = Array.new if @collected_values["extra_params"][key] == nil
             @collected_values["extra_params"][key] << value
           else
-            puts "ignoring parameter value '#{value}' for param '#{key}' : " + ex.to_s
+            puts "ignoring parameter value '#{value_list}' for param '#{key}' : " + ex.to_s
           end
         end
       end
@@ -216,15 +235,22 @@ class VopShellBackend < Backend
     $logger.debug "vop_shell_backend executing command '#{command.short_name}'"
 
     begin
-      response = @op.execute_command(command.short_name, @collected_values)
+      extras = {
+        'shell' => self
+      }
+      (response, context) = @op.execute_command(command.short_name, @collected_values, extras)
 
       if command.short_name == 'exit'
         $logger.info "exiting on user request"
         Kernel.exit(0)
       end
 
-      if (response[:context] && response[:context][:prompt])
-        set_prompt response[:context][:prompt]
+      if context
+        if context['prompt']
+          set_prompt context['prompt']
+        end
+
+        @local_context.merge! context
       end
 
       format_output(command, response)
