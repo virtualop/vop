@@ -3,6 +3,7 @@ require 'logger'
 require 'pathname'
 
 require 'vop/plugin_loader'
+require "active_support/inflector"
 
 module Vop
 
@@ -84,6 +85,27 @@ module Vop
       # step 2 : activate plugins (in the right order)
       ordered_plugins.each do |plugin|
         plugin.init
+      end
+
+      # step3 : expand entities
+      @plugins['core'].state[:entities].each do |entity|
+        entity_name = entity[:name]
+        entity_command = @commands[entity_name]
+        # TODO this won't work without rails installed
+        list_command_name = "list_#{entity_name.pluralize(42)}"
+        list_command = Command.new(entity_command.plugin, list_command_name)
+
+        if entity[:options][:on]
+          list_command.params << {
+            :name => entity[:options][:on],
+            :multi => false,
+            :mandatory => true,
+            :default_param => true
+          }
+        end
+        list_command.block = entity_command.param(entity[:key])[:lookup]
+        commands[list_command_name] = list_command
+        # TODO add pseudo source code so that `source <list_command_name>` works
       end
     end
 

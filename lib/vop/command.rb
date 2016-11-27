@@ -102,6 +102,15 @@ module Vop
         result.merge! extra
       end
 
+      # add in defaults (for all params that have not been specified)
+      params.each do |p|
+        unless result.has_key? p[:name]
+          if p[:default]
+            result[p[:name]] = p[:default]
+          end
+        end
+      end
+
       result
     end
 
@@ -114,6 +123,7 @@ module Vop
 
       payload = []
       context = {} # TODO should this be initialized?
+
       block_param_names.each do |name|
         param = nil
 
@@ -136,6 +146,7 @@ module Vop
             raise "unknown block param name : >>#{name}<<"
           end
         end
+
         # from the black magick department: block parameters with the
         # same name as an entity get auto-inflated
         if param
@@ -143,7 +154,6 @@ module Vop
             resolved = @plugin.op.send(name, param)
             param = resolved
           end
-
           payload << param
         end
       end

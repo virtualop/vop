@@ -8,7 +8,6 @@ def default_entity_block(params)
 end
 
 def entity(key, options = {}, &block)
-
   command_name = @command.short_name
 
   # the entity command gets a mandatory param automatically, using the
@@ -16,15 +15,23 @@ def entity(key, options = {}, &block)
   #list_block = block || default_entity_block
   list_block = block
 
+  if options[:on]
+    param! options[:on]
+  end
+
   param! key, :lookup => lambda { |params|
     collected = @op.collect_contributions('name' => command_name, 'raw_params' => params)
     params_with_contributions = params.merge(:contributions => collected)
     the_list = list_block.call(params_with_contributions)
-    the_list.map { |x| x[key.to_sym] }
+    the_list
   }
 
   @op.plugins['core'].state[:entities] ||= []
-  @op.plugins['core'].state[:entities] << command_name
+  @op.plugins['core'].state[:entities] << {
+    name: command_name,
+    key: key,
+    options: options
+  }
 
   # entities generally accept contributions...
   accept_contributions
@@ -40,7 +47,7 @@ def entity(key, options = {}, &block)
     if found && found.size > 0
       Entity.new(@op, command_name, key, found.first)
     else
-      raise "no such entity : #{params[key]}"
+      raise "no such entity : #{params[key]} [#{command_name}]"
     end
   end
 end

@@ -165,13 +165,6 @@ class VopShellBackend < Backend
       # we're in parameter processing mode - so check which parameter
       # we've got now and switch modes if necessary
 
-      # # values could have been provided through the context
-      # # (in this case we don't have to ask again)
-      # if @collected_values.has_key? @current_param
-      #   @missing_params.shift
-      #   execute_command_if_possible
-      # end
-
       # we might have been waiting for multiple param values - check if the user finished
       # adding values by entering an empty string as value
       if @current_param && (@current_param[:multi] and command_line == "") then

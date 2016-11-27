@@ -17,9 +17,10 @@ run do |name, raw_params, params|
 
       $logger.debug "calling #{contributor} for contribution to #{name}"
       #puts caller[0..10]
-      if caller.grep(/eval.*block in entity/).size > 1
+      if caller.grep(/eval.*block in entity/).size > 2
         $logger.debug "skipping contribution from #{contributor} because of loop"
       else
+        $logger.debug "raw params: " + raw_params.inspect
         short_name = contributor.to_s.split('.').last
         result += @op.send(short_name.to_sym, raw_params)
       end
