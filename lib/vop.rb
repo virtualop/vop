@@ -101,7 +101,6 @@ module Vop
       @plugins['core'].state[:entities].each do |entity|
         entity_name = entity[:name]
         entity_command = @commands[entity_name]
-        # TODO this won't work without rails installed
         list_command_name = "list_#{entity_name.pluralize(42)}"
         $logger.debug "generating #{list_command_name}"
         list_command = Command.new(entity_command.plugin, list_command_name)
