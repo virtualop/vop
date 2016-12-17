@@ -50,6 +50,10 @@ module Vop
       $logger.info "hello."
     end
 
+    def _pry
+      binding.pry
+    end
+
     def inspect
       chunk_size = 25
       plugin_string = @plugins.keys.sort[0..chunk_size-1].join(' ')
@@ -63,7 +67,6 @@ module Vop
       $logger.debug "loading..."
 
       load_plugins
-      #make_methods
 
       $logger.info "loaded #{@commands.size} commands from #{@plugins.size} plugins"
     end

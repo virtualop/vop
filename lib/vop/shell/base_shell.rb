@@ -100,7 +100,7 @@ class BaseShell
         if error == "exit"
           Kernel.exit
         else
-          $stderr.puts "error: #{error}"
+          $stderr.puts "error: >>#{error}<<"
           $stderr.puts error.backtrace.join("\n")
         end
       end
