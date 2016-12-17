@@ -7,12 +7,29 @@ def description(s)
 end
 
 def param(name, options = {})
-  @command.params << {
-    :name => name,
+  p = {
+    :name => name.to_s,
     :multi => false,
     :mandatory => false,
     :default_param => false
-  }.merge(options)
+  }
+
+  if name.is_a? Symbol
+    # symbols are resolved into entities
+    # (only from the moment when list_entities has been loaded, though)
+    if @plugin.op.respond_to? :list_entities
+      if @plugin.op.list_entities.include? name.to_s
+        list_command_name = "list_#{name.to_s.pluralize(42)}"
+        p[:lookup] = lambda do |params|
+          @plugin.op.send(list_command_name.to_sym).map { |x| x[:name] }
+        end
+      end
+    else
+      puts "op not responding to :list_entities (currently resolving param #{name} in #{@command.name})"
+    end
+  end
+
+  @command.params << p.merge(options)
 end
 
 def param!(name, options = {})

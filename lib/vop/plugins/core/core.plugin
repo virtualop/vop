@@ -1,0 +1,3 @@
+on :init do |plugin|
+  plugin.state[:entities] ||= []
+end

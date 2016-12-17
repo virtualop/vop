@@ -22,6 +22,7 @@ module Vop
       @dependencies = []
 
       @state = {}
+      @hooks = {}
 
       @sources = Hash.new { |h, k| h[k] = {} }
     end
@@ -30,14 +31,19 @@ module Vop
       "Vop::Plugin #{@name}"
     end
 
+    def hook(name, &block)
+      @hooks[name.to_sym] = block
+    end
+
     def init
-      #call_hook :preload
+      $logger.debug "plugin init #{@name}"
+      call_hook :preload
       load_helpers
       load_config
       # TODO we might want to activate/register only plugins with enough config
-      #call_hook :init
+      call_hook :init
       load_commands
-      #call_hook :activate
+      call_hook :activate
     end
 
     def plugin_dir(name)
@@ -50,7 +56,7 @@ module Vop
         Dir.glob(File.join(dir, '*.rb')).each do |file_name|
           name_from_file = /#{dir}\/(.+).rb$/.match(file_name).captures.first
           full_name = @name + '.' + name_from_file
-          $logger.debug("  reading #{type_name} '#{full_name}' from '#{file_name}'")
+          $logger.debug("  #{type_name} << #{full_name}")
 
           code = File.read(file_name)
           @sources[type_name][full_name] = {
@@ -112,7 +118,7 @@ module Vop
       @commands = loader.read_sources @sources[:commands]
       @commands.each do |name, command|
         # TODO might want to warn/debug about overrides here
-        @op.commands[command.short_name] = command
+        @op.eat(command)
       end
     end
 
@@ -120,6 +126,10 @@ module Vop
     end
 
     def call_hook(name)
+      if @hooks.has_key? name
+        $logger.debug "plugin #{self.name} calling hook #{name}"
+        @hooks[name].call(self)
+      end
     end
 
   end

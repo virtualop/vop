@@ -62,13 +62,22 @@ module Vop
       $logger.debug "loading..."
 
       load_plugins
-      make_methods
+      #make_methods
 
       $logger.info "loaded #{@commands.size} commands from #{@plugins.size} plugins"
     end
 
     def _search_path
       [ CORE_PLUGIN_PATH ] + config[:search_path]
+    end
+
+    def eat(command)
+      @commands[command.short_name] = command
+
+      self.class.send(:define_method, command.short_name) do |*args|
+        ruby_args = args.length > 0 ? args[0] : {}
+        self.execute(command.short_name, ruby_args)
+      end
     end
 
     def load_plugins
@@ -93,6 +102,7 @@ module Vop
         entity_command = @commands[entity_name]
         # TODO this won't work without rails installed
         list_command_name = "list_#{entity_name.pluralize(42)}"
+        $logger.debug "generating #{list_command_name}"
         list_command = Command.new(entity_command.plugin, list_command_name)
 
         if entity[:options][:on]
@@ -104,7 +114,7 @@ module Vop
           }
         end
         list_command.block = entity_command.param(entity[:key])[:lookup]
-        commands[list_command_name] = list_command
+        eat(list_command)
         # TODO add pseudo source code so that `source <list_command_name>` works
       end
 
@@ -150,15 +160,6 @@ module Vop
       end
 
       commands[name]
-    end
-
-    def make_methods
-      @commands.each do |name, command|
-        self.class.send(:define_method, name) do |*args|
-          ruby_args = args.length > 0 ? args[0] : {}
-          self.execute(name, ruby_args)
-        end
-      end
     end
 
     def execute(command_name, param_values, extra = {})

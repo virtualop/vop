@@ -25,6 +25,10 @@ module Vop
       @plugin
     end
 
+    def on(hook_sym, &block)
+      @plugin.hook(hook_sym, &block)
+    end
+
     def dependency(sym)
       @plugin.dependencies << sym.to_s
     end

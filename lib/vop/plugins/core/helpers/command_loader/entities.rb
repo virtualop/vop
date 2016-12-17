@@ -7,6 +7,14 @@ def default_entity_block(params)
   params['contributions']
 end
 
+def define_entity(name, key, options)
+  @op.plugins['core'].state[:entities] << {
+    name: name,
+    key: key,
+    options: options
+  }
+end
+
 def entity(key, options = {}, &block)
   command_name = @command.short_name
 
@@ -27,12 +35,7 @@ def entity(key, options = {}, &block)
     the_list
   }
 
-  @op.plugins['core'].state[:entities] ||= []
-  @op.plugins['core'].state[:entities] << {
-    name: command_name,
-    key: key,
-    options: options
-  }
+  define_entity(command_name, key, options)
 
   # entities generally accept contributions...
   accept_contributions
