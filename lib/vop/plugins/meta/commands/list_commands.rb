@@ -2,7 +2,6 @@ description "returns a list of commands with descriptions"
 
 param 'plugin', :description => 'list of plugins to filter by',
   :multi => true,
-  :default => [],
   :lookup => lambda { |params| @op.list_plugins.map { |x| x[:name] } },
   :default_param => true
 

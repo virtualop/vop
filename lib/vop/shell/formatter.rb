@@ -10,7 +10,7 @@ def format_output(command, data)
       if command.show_options.include? :columns
         columns_to_display = command.show_options[:columns]
       end
-      column_headers = columns_to_display.map(&:capitalize)
+      column_headers = columns_to_display
 
       rearranged = [] # array of hashes -> array of arrays
       data.each do |row|
