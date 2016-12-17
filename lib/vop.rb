@@ -2,8 +2,9 @@ require 'pp'
 require 'logger'
 require 'pathname'
 
+require 'vop/version'
 require 'vop/plugin_loader'
-require "active_support/inflector"
+require 'active_support/inflector'
 
 module Vop
 
@@ -35,7 +36,7 @@ module Vop
         self.shutdown
       }
 
-      @version = '0.3.0'
+      @version = ::Vop::VERSION
 
       @config = DEFAULTS
       @config.merge! options
