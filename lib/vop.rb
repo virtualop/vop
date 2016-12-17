@@ -107,6 +107,8 @@ module Vop
         commands[list_command_name] = list_command
         # TODO add pseudo source code so that `source <list_command_name>` works
       end
+
+      # TODO add pre-flight hook so that plugins can attach logic to execute here
     end
 
     def resolve(plugin, resolved, unresolved, level = 0)

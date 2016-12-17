@@ -12,6 +12,7 @@ def entity(key, options = {}, &block)
 
   # the entity command gets a mandatory param automatically, using the
   # block defined by the entity as lookup
+  # TODO make the default block work
   #list_block = block || default_entity_block
   list_block = block
 
