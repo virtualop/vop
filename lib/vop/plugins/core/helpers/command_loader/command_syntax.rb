@@ -15,19 +15,18 @@ def param(name, options = {})
   }
 
   if name.is_a? Symbol
-    # symbols are resolved into entities
+    # parameters whose names are symbols are resolved into entities
     # (only from the moment when list_entities has been loaded, though)
+
     op = @plugin.op
-    if op.respond_to? :list_entities
-      if op.list_entities.include? name.to_s
-        list_command_name = "list_#{name.to_s.pluralize(42)}"
-        p[:lookup] = lambda do |params|
-          # TODO :name is probably specific to the entity (key?)
-          op.send(list_command_name.to_sym).map { |x| x[:name] }
-        end
+
+    entity_names = op.core.state[:entities].map { |entity| entity[:name] }
+    if entity_names.include? name.to_s
+      list_command_name = "list_#{name.to_s.pluralize(42)}"
+      p[:lookup] = lambda do |params|
+        # TODO :name is probably specific to the entity (key?)
+        op.send(list_command_name.to_sym).map { |x| x[:name] }
       end
-    else
-      puts "op not responding to :list_entities (currently resolving param #{name} in #{@command.name})"
     end
   end
 

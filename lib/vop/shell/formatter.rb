@@ -21,7 +21,16 @@ def format_output(command, data)
         rearranged << values
       end
 
-      rearranged.sort_by! { |row| row.first }
+      begin
+        rearranged.sort_by! { |row| row.first }
+      rescue
+        puts "[WARN] ran into trouble sorting the result (by the first column); results may be not quite sorted."
+        begin
+          rearranged.sort_by! { |row| row.first || "zaphod" }
+        rescue
+          puts "[SHRUG] could not sort even when accounting for potential nil values, giving up."
+        end
+      end
 
       puts Terminal::Table.new rows: rearranged, headings: column_headers
     else

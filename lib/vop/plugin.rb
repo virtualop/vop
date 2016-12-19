@@ -35,6 +35,13 @@ module Vop
       @hooks[name.to_sym] = block
     end
 
+    def call_hook(name, *args)
+      if @hooks.has_key? name
+        $logger.debug "plugin #{self.name} calling hook #{name}"
+        @hooks[name].call(self, *args)
+      end
+    end
+
     def init
       $logger.debug "plugin init #{@name}"
       call_hook :preload
@@ -123,13 +130,6 @@ module Vop
     end
 
     def load_config
-    end
-
-    def call_hook(name)
-      if @hooks.has_key? name
-        $logger.debug "plugin #{self.name} calling hook #{name}"
-        @hooks[name].call(self)
-      end
     end
 
   end

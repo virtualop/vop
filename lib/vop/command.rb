@@ -150,7 +150,8 @@ module Vop
         # from the black magick department: block parameters with the
         # same name as an entity get auto-inflated
         if param
-          if @plugin.op.list_entities.include? name.to_s
+          entity_names = @plugin.op.core.state[:entities].map { |entity| entity[:name] }
+          if entity_names.include? name.to_s
             resolved = @plugin.op.send(name, param)
             param = resolved
           end

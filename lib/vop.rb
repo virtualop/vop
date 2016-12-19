@@ -87,6 +87,7 @@ module Vop
     def load_plugins
       @plugins = {}
       @commands = {}
+      @hooks = Hash.new { |h,k| h[k] = [] }
 
       # step 1 : read plugins from all existing source dirs
       candidates = _search_path
@@ -165,8 +166,39 @@ module Vop
       commands[name]
     end
 
+    def core
+      @plugins['core']
+    end
+
+    def hook(name, plugin_name)
+      @hooks[name] << plugin_name
+    end
+
+    def call_hook(name, *payload)
+      @hooks[name].each do |plugin_name, block|
+        @plugins[plugin_name].call_hook(name, payload)
+      end
+    end
+
+    def before_execute(request)
+      #puts ">> #{request.command_name} #{request.param_values.keys}"
+      call_hook :before_execute, request
+    end
+
+    def after_execute(request, response)
+      #puts "<< #{request.command_name} #{response.result}"
+      call_hook :after_execute, request, response
+    end
+
     def execute(command_name, param_values, extra = {})
+      request = Request.new(command_name, param_values, extra)
+      before_execute(request)
+
       (result, context) = execute_command(command_name, param_values, extra)
+
+      response = Response.new(result, context)
+      after_execute(request, response)
+
       result
     end
 
@@ -182,5 +214,29 @@ module Vop
     end
 
   end
+
+  class Request
+
+    attr_reader :command_name, :param_values
+
+    def initialize(command_name, param_values, extra = {})
+      @command_name = command_name
+      @param_values = param_values
+      # fuck extra
+    end
+
+  end
+
+  class Response
+
+    attr_reader :result
+
+    def initialize(result, context)
+      @result = result
+      @context = context
+    end
+
+  end
+
 
 end

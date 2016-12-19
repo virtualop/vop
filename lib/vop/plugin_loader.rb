@@ -27,6 +27,11 @@ module Vop
 
     def on(hook_sym, &block)
       @plugin.hook(hook_sym, &block)
+
+      core_hooks = %i|before_execute after_execute|
+      if core_hooks.include? hook_sym
+        @op.hook(hook_sym, @plugin.name)
+      end
     end
 
     def dependency(sym)
