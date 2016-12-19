@@ -1,9 +1,9 @@
-param! 'name', :lookup => lambda { @op.list_commands.map { |x| x[:name] } }
+param! "name", :lookup => lambda { @op.list_commands.map { |x| x[:name] } }
 
 run do |params|
   puts
-  puts params['name']
-  command = @op.commands[params['name']]
+  puts params["name"]
+  command = @op.commands[params["name"]]
   if command.description
     puts "  #{command.description}"
   end

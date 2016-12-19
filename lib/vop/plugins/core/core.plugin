@@ -1,3 +1,4 @@
 on :init do |plugin|
   plugin.state[:entities] ||= []
+  plugin.state[:contributions] ||= Hash.new { |h,k| h[k] = [] }
 end

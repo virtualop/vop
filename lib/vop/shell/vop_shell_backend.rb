@@ -183,30 +183,32 @@ class VopShellBackend < Backend
     else
       (unused, @command_selected, values) = parse_command_string(command_line, @local_context)
 
-      values.each do |key, value_list|
-        begin
-          value_list.each do |value|
-            @current_param = @command_selected.param(key)
-            if @current_param
-              @collected_values[@current_param[:name]] << value
+      if @command_selected
+        values.each do |key, value_list|
+          begin
+            value_list.each do |value|
+              @current_param = @command_selected.param(key)
+              if @current_param
+                @collected_values[@current_param[:name]] << value
+              else
+                # TODO handle extra params?
+              end
+            end
+          rescue Exception => ex
+            # TODO broken (error: undefined method `accepts_extra_params' for Vop::Command machines.select_machine:Vop::Command)
+            if @command_selected && false && @command_selected.accepts_extra_params
+              puts "collecting value for extra param : #{key} => #{value}"
+              @collected_values["extra_params"] = {} unless @collected_values.has_key?("extra_params")
+              @collected_values["extra_params"][key] = Array.new if @collected_values["extra_params"][key] == nil
+              @collected_values["extra_params"][key] << value
             else
-              # TODO handle extra params?
+              #puts "ignoring parameter value '#{value_list}' for param '#{key}' : " + ex.to_s
+              raise ex
             end
           end
-        rescue Exception => ex
-          # TODO broken (error: undefined method `accepts_extra_params' for Vop::Command machines.select_machine:Vop::Command)
-          if false && @command_selected.accepts_extra_params
-            puts "collecting value for extra param : #{key} => #{value}"
-            @collected_values["extra_params"] = {} unless @collected_values.has_key?("extra_params")
-            @collected_values["extra_params"][key] = Array.new if @collected_values["extra_params"][key] == nil
-            @collected_values["extra_params"][key] << value
-          else
-            puts "ignoring parameter value '#{value_list}' for param '#{key}' : " + ex.to_s
-          end
         end
-      end
 
-      if @command_selected
+
         execute_command_if_possible
       end
     end

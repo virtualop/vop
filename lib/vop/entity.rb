@@ -1,5 +1,11 @@
 module Vop
 
+  # An entity is something that is identifiable through a key, e.g. a name.
+  # Also, it groups commands that accept the same parameter: When a command
+  # is called on an entity, the parameter with the same name is filled, so
+  #   @op.machine("localhost").processes()
+  # is equivalent to
+  #   @op.processes(machine: "localhost")
   class Entity
 
     def initialize(op, name, key, hash)

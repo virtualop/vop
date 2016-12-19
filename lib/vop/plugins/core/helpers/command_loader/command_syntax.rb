@@ -17,11 +17,13 @@ def param(name, options = {})
   if name.is_a? Symbol
     # symbols are resolved into entities
     # (only from the moment when list_entities has been loaded, though)
-    if @plugin.op.respond_to? :list_entities
-      if @plugin.op.list_entities.include? name.to_s
+    op = @plugin.op
+    if op.respond_to? :list_entities
+      if op.list_entities.include? name.to_s
         list_command_name = "list_#{name.to_s.pluralize(42)}"
         p[:lookup] = lambda do |params|
-          @plugin.op.send(list_command_name.to_sym).map { |x| x[:name] }
+          # TODO :name is probably specific to the entity (key?)
+          op.send(list_command_name.to_sym).map { |x| x[:name] }
         end
       end
     else

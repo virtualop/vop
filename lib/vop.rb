@@ -54,15 +54,6 @@ module Vop
       binding.pry
     end
 
-    def inspect
-      chunk_size = 25
-      plugin_string = @plugins.keys.sort[0..chunk_size-1].join(' ')
-      if @plugins.length > chunk_size
-        plugin_string += " + #{@plugins.length - chunk_size} more"
-      end
-      "vop #{@version} (#{plugin_string})"
-    end
-
     def _reset
       $logger.debug "loading..."
 
@@ -73,6 +64,15 @@ module Vop
 
     def _search_path
       [ CORE_PLUGIN_PATH ] + config[:search_path]
+    end
+
+    def inspect
+      chunk_size = 25
+      plugin_string = @plugins.keys.sort[0..chunk_size-1].join(' ')
+      if @plugins.length > chunk_size
+        plugin_string += " + #{@plugins.length - chunk_size} more"
+      end
+      "vop #{@version} (#{plugin_string})"
     end
 
     def eat(command)
@@ -100,7 +100,7 @@ module Vop
         plugin.init
       end
 
-      # step3 : expand entities
+      # step 3 : expand entities
       @plugins['core'].state[:entities].each do |entity|
         entity_name = entity[:name]
         entity_command = @commands[entity_name]

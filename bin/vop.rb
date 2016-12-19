@@ -10,7 +10,11 @@ require 'pp'
 
 begin
   shell = Vop::Shell::setup()
-  last_response = shell.run_cli
+  if shell.options["--execute"]
+    last_response = shell.execute(shell.options["--execute"])
+  else
+    last_response = shell.run_cli
+  end
 
   # TODO exit_status = last_response && last_response.status == Vop.Status::OK ? 0 : 1
   exit 0

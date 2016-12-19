@@ -1,7 +1,7 @@
-param! 'name', :lookup => lambda { @op.list_commands.map { |x| x[:name] } }
+param! "name", :lookup => lambda { @op.list_commands.map { |x| x[:name] } }
 
 run do |params, name|
-  editor = ENV['EDITOR']
+  editor = ENV["EDITOR"]
   editor = "vim" # TODO if "config.default_editor"
   raise "please set the EDITOR environment variable" unless editor
 
