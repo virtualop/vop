@@ -21,6 +21,10 @@ module Vop
       @config = {}
       @dependencies = []
 
+      # all plugins depend on 'core' (unless they are core or some murky dummy)
+      independents = %w|core __root__|
+      @dependencies << 'core' unless independents.include? plugin_name
+
       @state = {}
       @hooks = {}
 

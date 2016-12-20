@@ -16,8 +16,6 @@ def param(name, options = {})
 
   if name.is_a? Symbol
     # parameters whose names are symbols are resolved into entities
-    # (only from the moment when list_entities has been loaded, though)
-
     op = @plugin.op
 
     entity_names = op.core.state[:entities].map { |entity| entity[:name] }
