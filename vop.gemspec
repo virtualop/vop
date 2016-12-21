@@ -10,9 +10,9 @@ Gem::Specification.new do |spec|
   spec.email         = ["philipp@virtualop.org"]
 
   spec.summary       = %q{The virtualop is a tool for automating things.}
-  spec.description   = %q{Automated things fail less frequently, that's why it's good to be able to easily write scripts.}
+  spec.description   = %q{Automated processes fail more consistently, that's why I wrote a tool to make scripts that will do things that we won't have to do ourselves then. (see xkcd #1629)}
   spec.homepage      = "http://www.virtualop.org"
-  
+
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
