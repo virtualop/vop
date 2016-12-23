@@ -1,4 +1,5 @@
-require 'vop/command_loader'
+require "vop/command_loader"
+require "erb"
 
 module Vop
 
@@ -41,7 +42,6 @@ module Vop
 
     def call_hook(name, *args)
       if @hooks.has_key? name
-        $logger.debug "plugin #{self.name} calling hook #{name}"
         @hooks[name].call(self, *args)
       end
     end
@@ -134,6 +134,13 @@ module Vop
     end
 
     def load_config
+    end
+
+    def read_template(sym)
+      path = File.join(self.path, "templates", sym.to_s + ".erb")
+      puts "reading plugin template #{sym} from #{path}"
+      renderer = ERB.new(IO.read(path))
+      renderer.result(binding)
     end
 
   end

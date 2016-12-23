@@ -119,7 +119,7 @@ module Vop
 
       block_param_names = self.block.parameters.map { |x| x.last }
 
-      #puts "executing #{self.name} : prepared : #{prepared.inspect}"
+      $logger.debug "executing #{self.name} : prepared : #{prepared.inspect}"
 
       payload = []
       context = {} # TODO should this be initialized?
@@ -152,12 +152,16 @@ module Vop
         if param
           entity_names = @plugin.op.core.state[:entities].map { |entity| entity[:name] }
           if entity_names.include? name.to_s
+            $logger.debug "auto-inflating #{name.to_s}"
             resolved = @plugin.op.send(name, param)
             param = resolved
+            $logger.debug "...#{name.to_s} entity : #{resolved.inspect}"
           end
           payload << param
         end
       end
+
+      $logger.debug("payload : #{payload.inspect}")
 
       result = self.block.call(*payload)
       [result, context]

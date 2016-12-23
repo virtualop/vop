@@ -25,7 +25,7 @@ def entity(key, options = {}, &block)
   list_block = block
 
   if options[:on]
-    param! options[:on]
+    param! options[:on].to_sym
   end
 
   param! key, :lookup => lambda { |params|

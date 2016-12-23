@@ -1,18 +1,13 @@
 require 'vop'
 require 'pp'
 require 'fileutils'
+require 'spec_helper'
 
 RSpec.describe Vop do
 
-  test_src_path = '/tmp/vop_rspec_test'
-
+  include SpecHelper
   before(:example) do
-    if File.exists? test_src_path
-      FileUtils.rm_r test_src_path
-    end
-    Dir.mkdir test_src_path
-    @vop = Vop::Vop.new
-    @vop.add_search_path test_src_path
+    prepare
   end
 
   it "makes vop commands available as methods" do
@@ -34,7 +29,8 @@ RSpec.describe Vop do
 
   it "is possible to create and remove plugins" do
     old_plugin_list = @vop.list_plugins
-    expect(@vop.new_plugin('path' => test_src_path, 'name' => 'rspec_test')).to_not be_nil
+    new_plugin = @vop.new_plugin('path' => SpecHelper::TEST_SRC_PATH, 'name' => 'rspec_test')
+    expect(new_plugin).to_not be_nil
     new_plugin_list = @vop.list_plugins
     expect(new_plugin_list.length).to be > old_plugin_list.length
 

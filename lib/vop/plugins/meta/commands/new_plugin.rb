@@ -21,5 +21,7 @@ run do |params|
   plugin_file = params['name'] + '.plugin'
   FileUtils.touch(File.join(plugin_path, plugin_file))
 
+  $logger.info "created new plugin #{plugin_file}"
+
   @op.reset
 end
