@@ -22,6 +22,8 @@ module Vop
       @config = {}
       @dependencies = []
 
+      @config_file_name = File.join(::Vop::PLUGIN_CONFIG_PATH, plugin_name + ".json")
+
       # all plugins depend on 'core' (unless they are core or some murky dummy)
       independents = %w|core __root__|
       @dependencies << 'core' unless independents.include? plugin_name
@@ -134,11 +136,27 @@ module Vop
     end
 
     def load_config
+      if File.exists? @config_file_name
+        begin
+          @config = JSON.parse(IO.read(@config_file_name))
+        rescue
+          $logger.error "could not read JSON config from #{@config_file_name}, ignoring"
+        end
+      end
+    end
+
+    def write_config
+      unless File.exists? ::Vop::PLUGIN_CONFIG_PATH
+        FileUtils.mkdir_p ::Vop::PLUGIN_CONFIG_PATH
+      end
+      File.open(@config_file_name, 'w') do |file|
+        file.write @config.to_json()
+      end
     end
 
     def read_template(sym)
       path = File.join(self.path, "templates", sym.to_s + ".erb")
-      puts "reading plugin template #{sym} from #{path}"
+      $logger.debug "reading plugin template #{sym} from #{path}"
       renderer = ERB.new(IO.read(path))
       renderer.result(binding)
     end

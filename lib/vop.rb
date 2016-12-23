@@ -1,6 +1,8 @@
 require 'pp'
 require 'logger'
 require 'pathname'
+require 'yaml'
+require 'json'
 
 require 'vop/version'
 require 'vop/plugin_loader'
@@ -10,20 +12,16 @@ module Vop
 
   VOP_ROOT = Pathname.new(File.join(File.dirname(__FILE__), '..')).realpath
   CORE_PLUGIN_PATH = Pathname.new(File.join(File.dirname(__FILE__), 'vop', 'plugins')).realpath
-  #CONFIG_PATH = '/etc/vop'
-  #PLUGIN_CONFIG_PATH = File.join(CONFIG_PATH, 'plugins.d')
+  CONFIG_PATH = '/etc/vop'
+  PLUGIN_CONFIG_PATH = File.join(CONFIG_PATH, 'plugins.d')
 
   class Vop
 
     DEFAULTS = {
-      :search_path => [
+      'search_path' => [
         File.join(VOP_ROOT, '..', 'plugins/standard'),
         File.join(VOP_ROOT, '..', 'plugins/extended')
-      ],
-      :command_dir_name => 'commands',
-      :plugin_config => {
-
-      }
+      ]
     }
 
     attr_reader :config
@@ -38,11 +36,23 @@ module Vop
 
       @version = ::Vop::VERSION
 
+      @plugins = {}
+      @commands = {}
+      @hooks = Hash.new { |h,k| h[k] = [] }
+
       @config = DEFAULTS
+      @config.merge! load_system_config
       @config.merge! options
+
+      if options.has_key? :search_path
+        osp = options[:search_path]
+        @config['search_path'] = osp.is_a?(Array) ? osp : [ osp ]
+      end
 
       $logger = Logger.new(STDOUT)
       $logger.level = options['--verbose'] ? Logger::DEBUG : Logger::INFO
+
+      $logger.debug "config : #{@config.inspect}"
 
       _reset
 
@@ -57,13 +67,36 @@ module Vop
     def _reset
       $logger.debug "loading..."
 
-      load_plugins
+      load_plugins_twice
 
       $logger.info "loaded #{@commands.size} commands from #{@plugins.size} plugins"
     end
 
     def _search_path
-      [ CORE_PLUGIN_PATH ] + config[:search_path]
+      result = [ CORE_PLUGIN_PATH ] + config['search_path']
+      if @plugins.has_key?('core') && ! @plugins['core'].config.nil? && @plugins['core'].config.has_key?('search_path')
+        result += @plugins['core'].config['search_path']
+      end
+      result
+    end
+
+    def add_to_search_path(new_path)
+      core.config['search_path'] ||= []
+      core.config['search_path'] << new_path
+    end
+
+    def load_system_config
+      if File.exists? CONFIG_PATH
+        main_config_root = File.join(CONFIG_PATH, 'vop.')
+
+        result = if File.exists? main_config_root + 'yml'
+          YAML.load_file(main_config_root + 'yml')
+        elsif File.exists? main_config_root + 'json'
+          JSON.parse(IO.read(main_config_root + 'json'))
+        else
+          {}
+        end
+      end
     end
 
     def inspect
@@ -123,6 +156,22 @@ module Vop
       end
 
       # TODO add pre-flight hook so that plugins can attach logic to execute here
+    end
+
+    # plugins are configured when they are loaded; the search path is part of the
+    # 'core' plugin's config, so we load plugins again with a potentially
+    # extended search path
+    def load_plugins_twice
+      first_search_path = _search_path
+      load_plugins
+      second_search_path = _search_path
+      if second_search_path != first_search_path
+        #load_plugins
+      end
+      third_search_path = _search_path
+      if third_search_path != second_search_path
+        $logger.warn "search path changed again during second load, not falling for it."
+      end
     end
 
     def resolve(plugin, resolved, unresolved, level = 0)
@@ -190,7 +239,7 @@ module Vop
       call_hook :after_execute, request, response
     end
 
-    def execute(command_name, param_values, extra = {})
+    def execute(command_name, param_values = {}, extra = {})
       request = Request.new(command_name, param_values, extra)
       before_execute(request)
 
