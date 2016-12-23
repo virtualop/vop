@@ -118,12 +118,13 @@ module Vop
     end
 
     def load_plugins
+      candidates = _search_path
+
       @plugins = {}
       @commands = {}
       @hooks = Hash.new { |h,k| h[k] = [] }
 
       # step 1 : read plugins from all existing source dirs
-      candidates = _search_path
       search_path = candidates.select { |path| File.exists? path }
       search_path.each do |path|
         PluginLoader.read(self, path)
@@ -138,6 +139,8 @@ module Vop
       @plugins['core'].state[:entities].each do |entity|
         entity_name = entity[:name]
         entity_command = @commands[entity_name]
+
+        # list_<entities>
         list_command_name = "list_#{entity_name.pluralize(42)}"
         $logger.debug "generating #{list_command_name}"
         list_command = Command.new(entity_command.plugin, list_command_name)
@@ -166,7 +169,7 @@ module Vop
       load_plugins
       second_search_path = _search_path
       if second_search_path != first_search_path
-        #load_plugins
+        load_plugins
       end
       third_search_path = _search_path
       if third_search_path != second_search_path
