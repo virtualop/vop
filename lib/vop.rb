@@ -3,31 +3,33 @@ require 'logger'
 require 'pathname'
 require 'yaml'
 require 'json'
+require 'active_support/inflector'
 
 require 'vop/version'
+require 'vop/request'
+require 'vop/plugin_finder'
 require 'vop/plugin_loader'
-require 'active_support/inflector'
+require 'vop/loaders/filter_loader'
 
 module Vop
 
-  VOP_ROOT = Pathname.new(File.join(File.dirname(__FILE__), '..')).realpath
-  CORE_PLUGIN_PATH = Pathname.new(File.join(File.dirname(__FILE__), 'vop', 'plugins')).realpath
-  CONFIG_PATH = '/etc/vop'
-  PLUGIN_CONFIG_PATH = File.join(CONFIG_PATH, 'plugins.d')
+  VOP_ROOT = Pathname.new(File.join(File.dirname(__FILE__), "..")).realpath
+  CORE_PLUGIN_PATH = File.join(VOP_ROOT, "lib", "vop", "plugins")
 
   class Vop
 
     DEFAULTS = {
-      'search_path' => [
-        File.join(VOP_ROOT, '..', 'plugins/standard'),
-        File.join(VOP_ROOT, '..', 'plugins/extended')
-      ]
+      "search_path" => [
+        File.join(VOP_ROOT, "..", "plugins/standard"),
+        File.join(VOP_ROOT, "..", "plugins/extended")
+      ],
+      "config_path" => "/etc/vop"
     }
 
     attr_reader :config
 
     attr_reader :plugins
-    attr_reader :commands
+    attr_reader :commands, :filters, :filter_chain
 
     def initialize(options = {})
       at_exit {
@@ -36,21 +38,17 @@ module Vop
 
       @version = ::Vop::VERSION
 
-      @plugins = {}
-      @commands = {}
-      @hooks = Hash.new { |h,k| h[k] = [] }
-
-      @config = DEFAULTS
-      @config.merge! load_system_config
-      @config.merge! options
+      @config_path = options[:config_path] || DEFAULTS["config_path"]
+      @config = DEFAULTS.merge(load_system_config).merge(options)
 
       if options.has_key? :search_path
         osp = options[:search_path]
-        @config['search_path'] = osp.is_a?(Array) ? osp : [ osp ]
+        osp = [ osp ] unless osp.is_a?(Array)
+        @config['search_path'] += osp
       end
 
       $logger = Logger.new(STDOUT)
-      $logger.level = options['--verbose'] ? Logger::DEBUG : Logger::INFO
+      $logger.level = options['--verbose'] || options[:verbose] ? Logger::DEBUG : Logger::INFO
 
       $logger.debug "config : #{@config.inspect}"
 
@@ -67,17 +65,37 @@ module Vop
     def _reset
       $logger.debug "loading..."
 
-      load_plugins_twice
+      load_plugins
 
-      $logger.info "loaded #{@commands.size} commands from #{@plugins.size} plugins"
+      loaded = "#{@commands.size} commands"
+      $logger.info "loaded #{loaded} from #{@plugins.size} plugins"
     end
 
     def _search_path
-      result = [ CORE_PLUGIN_PATH ] + config['search_path']
-      if @plugins.has_key?('core') && ! @plugins['core'].config.nil? && @plugins['core'].config.has_key?('search_path')
-        result += @plugins['core'].config['search_path']
+      result = [ CORE_PLUGIN_PATH ] # static path
+      result += config['search_path'] # config from /etc/vop
+
+      if core && core.config && core.config["search_path"]
+        result += core.config["search_path"] # core plugin config
       end
+
       result
+    end
+
+    def plugin_config_path
+      @plugin_config_path ||= File.join(@config_path, "plugins.d")
+    end
+
+    def command(name)
+      unless @commands.has_key?(name)
+        raise "no such command : #{name}"
+      end
+
+      @commands[name]
+    end
+
+    def core
+      @plugins['core']
     end
 
     def add_to_search_path(new_path)
@@ -86,8 +104,8 @@ module Vop
     end
 
     def load_system_config
-      if File.exists? CONFIG_PATH
-        main_config_root = File.join(CONFIG_PATH, 'vop.')
+      if File.exists? @config_path
+        main_config_root = File.join(@config_path, 'vop.')
 
         result = if File.exists? main_config_root + 'yml'
           YAML.load_file(main_config_root + 'yml')
@@ -99,32 +117,53 @@ module Vop
       end
     end
 
-    def inspect
-      chunk_size = 25
-      plugin_string = @plugins.keys.sort[0..chunk_size-1].join(' ')
-      if @plugins.length > chunk_size
-        plugin_string += " + #{@plugins.length - chunk_size} more"
-      end
-      "vop #{@version} (#{plugin_string})"
-    end
+    # def inspect
+    #   chunk_size = 25
+    #   plugins = @plugins || {}
+    #   plugin_string = plugins.keys.sort[0..chunk_size-1].join(' ')
+    #   if plugins.length > chunk_size
+    #     plugin_string += " + #{plugins.length - chunk_size} more"
+    #   end
+    #   "vop #{@version} (#{plugin_string})"
+    # end
 
-    def eat(command)
-      @commands[command.short_name] = command
+    def eat(stuff)
+      if stuff.is_a? Array
+        inspected = [stuff.inspect, "#{stuff.size} elements"].join(" ")
+        $logger.debug "eating #{inspected}"
+        stuff.each do |thing|
+          eat(thing)
+        end
+      else
+        $logger.debug "eating #{stuff.inspect}"
+        if stuff.is_a? Command
+          command = stuff
+          @commands[command.short_name] = command
 
-      self.class.send(:define_method, command.short_name) do |*args|
-        ruby_args = args.length > 0 ? args[0] : {}
-        self.execute(command.short_name, ruby_args)
+          self.class.send(:define_method, command.short_name) do |*args|
+            ruby_args = args.length > 0 ? args[0] : {}
+            self.execute(command.short_name, ruby_args)
+          end
+        elsif stuff.is_a? Filter
+          short_name = stuff.short_name
+          @filters[stuff.short_name] = stuff
+          @filter_chain.unshift stuff.short_name
+        else
+          raise "don't know how to process #{stuff.class}"
+        end
       end
+
     end
 
     def load_plugins
-      candidates = _search_path
-
       @plugins = {}
       @commands = {}
+      @filters = {}
+      @filter_chain = []
       @hooks = Hash.new { |h,k| h[k] = [] }
 
       # step 1 : read plugins from all existing source dirs
+      candidates = self._search_path
       search_path = candidates.select { |path| File.exists? path }
       search_path.each do |path|
         PluginLoader.read(self, path)
@@ -144,6 +183,7 @@ module Vop
         list_command_name = "list_#{entity_name.pluralize(42)}"
         $logger.debug "generating #{list_command_name}"
         list_command = Command.new(entity_command.plugin, list_command_name)
+        list_command.read_only = true
 
         if entity[:options][:on]
           list_command.params << {
@@ -164,6 +204,7 @@ module Vop
     # plugins are configured when they are loaded; the search path is part of the
     # 'core' plugin's config, so we load plugins again with a potentially
     # extended search path
+    # TODO we can probably do this more elegantly
     def load_plugins_twice
       first_search_path = _search_path
       load_plugins
@@ -210,16 +251,9 @@ module Vop
       resolved.map { |x| @plugins[x] }
     end
 
-    def command(name)
-      unless commands.has_key?(name)
-        raise "no such command : #{name}"
-      end
-
-      commands[name]
-    end
-
-    def core
-      @plugins['core']
+    def add_filter(command)
+      raise "kill?"
+      @filters << command
     end
 
     def hook(name, plugin_name)
@@ -232,33 +266,20 @@ module Vop
       end
     end
 
-    def before_execute(request)
-      #puts ">> #{request.command_name} #{request.param_values.keys}"
+    def execute_request(request)
       call_hook :before_execute, request
-    end
 
-    def after_execute(request, response)
-      #puts "<< #{request.command_name} #{response.result}"
+      response = request.execute()
       call_hook :after_execute, request, response
+
+      response
     end
 
     def execute(command_name, param_values = {}, extra = {})
-      request = Request.new(command_name, param_values, extra)
-      before_execute(request)
+      request = Request.new(self, command_name, param_values, extra)
+      response = execute_request(request)
 
-      (result, context) = execute_command(command_name, param_values, extra)
-
-      response = Response.new(result, context)
-      after_execute(request, response)
-
-      result
-    end
-
-    def execute_command(command_name, param_values, extra = {})
-      $logger.debug "+++ #{command_name} +++"
-      command = @commands[command_name]
-
-      command.execute(param_values, extra)
+      response.result
     end
 
     def shutdown()
@@ -266,29 +287,5 @@ module Vop
     end
 
   end
-
-  class Request
-
-    attr_reader :command_name, :param_values
-
-    def initialize(command_name, param_values, extra = {})
-      @command_name = command_name
-      @param_values = param_values
-      # fuck extra
-    end
-
-  end
-
-  class Response
-
-    attr_reader :result
-
-    def initialize(result, context)
-      @result = result
-      @context = context
-    end
-
-  end
-
 
 end

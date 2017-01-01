@@ -1,4 +1,6 @@
+read_only
+
 run do
-  foo()  
+  foo()
   config(:identity) || 'localhost'
 end

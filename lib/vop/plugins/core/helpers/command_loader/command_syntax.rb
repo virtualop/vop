@@ -1,5 +1,7 @@
 def config(sym)
-  @plugin.config[sym]
+  @plugin.config ?
+    @plugin.config[sym] :
+    nil
 end
 
 def description(s)
@@ -14,8 +16,8 @@ def param(name, options = {})
     :default_param => false
   }
 
+  # parameters whose names are symbols are resolved into entities
   if name.is_a? Symbol
-    # parameters whose names are symbols are resolved into entities
     op = @plugin.op
 
     entity_names = op.core.state[:entities].map { |entity| entity[:name] }
@@ -28,12 +30,23 @@ def param(name, options = {})
     end
   end
 
+  # auto-detect boolean parameters
+  if options.has_key? :default
+    if options[:default] == true || options[:default] == false
+      options[:boolean] = true
+    end
+  end
+
   @command.params << p.merge(options)
 end
 
 def param!(name, options = {})
   options.merge! :mandatory => true
   param(name, options)
+end
+
+def read_only
+  @command.read_only = true
 end
 
 def show(options = {})

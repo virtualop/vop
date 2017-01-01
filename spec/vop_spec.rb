@@ -29,7 +29,7 @@ RSpec.describe Vop do
 
   it "should allow to create and remove plugins" do
     old_plugin_list = @vop.list_plugins
-    puts "old_plugin_list : #{old_plugin_list.join("\n")}"
+    puts "old_plugin_list : #{old_plugin_list.inspect}"
     new_plugin = @vop.new_plugin('path' => SpecHelper::TEST_SRC_PATH, 'name' => 'rspec_test')
     expect(new_plugin).to_not be_nil
     new_plugin_list = @vop.list_plugins
@@ -37,7 +37,8 @@ RSpec.describe Vop do
     expect(new_plugin_list.length).to be > old_plugin_list.length
 
     old_plugin_list = new_plugin_list
-    expect(@vop.delete_plugin('name' => 'rspec_test')).to_not be_nil
+    result = @vop.delete_plugin('name' => 'rspec_test')
+    expect(result).to_not be_nil
     new_plugin_list = @vop.list_plugins
     expect(new_plugin_list.length).to be < old_plugin_list.length
   end

@@ -231,9 +231,12 @@ class VopShellBackend < Backend
 
     begin
       extras = {
+        # TODO needed for e.g. select_machine and show_context, but clutters up the stacks
         'shell' => self
       }
-      (response, context) = @op.execute_command(command.short_name, @collected_values, extras)
+      request = Vop::Request.new(@op, command.short_name, @collected_values, extras)
+      response = @op.execute_request(request)
+      (result, context) = response.result, response.context
 
       if command.short_name == 'exit'
         $logger.info "exiting on user request"
@@ -248,7 +251,7 @@ class VopShellBackend < Backend
         @local_context.merge! context
       end
 
-      format_output(command, response)
+      format_output(command, result)
     ensure
       reset_to_command_mode
     end

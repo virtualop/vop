@@ -8,6 +8,7 @@ module Vop
     attr_accessor :block
     attr_accessor :description
     attr_accessor :show_options
+    attr_accessor :read_only
 
     attr_reader :params
 
@@ -17,6 +18,7 @@ module Vop
       @block = lambda { |params| $logger.warn "#{name} not yet implemented!" }
       @params = []
       @show_options = {}
+      @read_only = false
     end
 
     def inspect
@@ -84,17 +86,22 @@ module Vop
                 $logger.debug("autounboxing for #{p[:name]}")
                 v = v.first
               end
+
+              # convert booleans
+              if p[:boolean]
+                $logger.info("converting #{p[:name]} into boolean")
+                v = /[tT]rue|[yY]es|[oO]n/ =~ v
+              end
             end
             result[k] = v
           end
         else
-          # if there's a default param, it can be passed as "scalar" param
-          # (as opposed to the usual hash) to execute, but will be converted
-          # into a "normal" named param
+          # if there's a default param, it can be passed to execute as "scalar"
+          # param, but it will be converted into a "normal" named param
           dp = default_param
-          if dp
-            result = {dp[:name] => ruby_args}
-          end
+          result = {
+            dp[:name] => ruby_args
+          } if dp
         end
       end
 
@@ -103,9 +110,9 @@ module Vop
       end
 
       # add in defaults (for all params that have not been specified)
-      params.each do |p|
+      @params.each do |p|
         unless result.has_key? p[:name]
-          if p[:default]
+          if p.has_key? :default
             result[p[:name]] = p[:default]
           end
         end
@@ -119,7 +126,7 @@ module Vop
 
       block_param_names = self.block.parameters.map { |x| x.last }
 
-      $logger.debug "executing #{self.name} : prepared : #{prepared.inspect}"
+      $logger.debug "executing #{self.name}"
 
       payload = []
       context = {} # TODO should this be initialized?
@@ -137,6 +144,12 @@ module Vop
         when 'shell'
           raise "shell not supported" unless extra.has_key? 'shell'
           param = extra['shell']
+        when 'request'
+          # TODO not sure we really need to create this again
+          param = Request.new(self.short_name, param_values, extra)
+        when 'chain'
+          raise "chain not supported" unless extra.has_key? 'chain'
+          param = extra['chain']
         else
           if prepared.has_key? name.to_s
             param = prepared[name.to_s]
@@ -165,6 +178,10 @@ module Vop
 
       result = self.block.call(*payload)
       [result, context]
+    end
+
+    def execute_request(request)
+      self.execute(request.param_values, request.extra)
     end
 
   end

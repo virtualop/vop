@@ -2,31 +2,36 @@ require "vop/command_loader"
 require "erb"
 
 module Vop
-
   class Plugin
 
     attr_reader :op
     attr_reader :name
     attr_reader :path
+    attr_reader :options
 
     attr_reader :commands
-    attr_reader :config
+    attr_accessor :config
     attr_reader :dependencies
 
     attr_reader :state
 
-    def initialize(op, plugin_name, plugin_path)
+    def initialize(op, plugin_name, plugin_path, options = {})
       @op = op
       @name = plugin_name
       @path = plugin_path
-      @config = {}
+      defaults = {
+        autoload: true
+      }
+      @options = defaults.merge(options)
+
+      @config = nil
       @dependencies = []
 
-      @config_file_name = File.join(::Vop::PLUGIN_CONFIG_PATH, plugin_name + ".json")
+      @config_file_name = File.join(op.plugin_config_path, plugin_name + ".json")
 
-      # all plugins depend on 'core' (unless they are core or some murky dummy)
+      # all plugins depend on "core" (unless they are core or some murky dummy called __root__)
       independents = %w|core __root__|
-      @dependencies << 'core' unless independents.include? plugin_name
+      @dependencies << "core" unless independents.include? plugin_name
 
       @state = {}
       @hooks = {}
@@ -43,9 +48,11 @@ module Vop
     end
 
     def call_hook(name, *args)
+      result = nil
       if @hooks.has_key? name
-        @hooks[name].call(self, *args)
+        result = @hooks[name].call(self, *args)
       end
+      result
     end
 
     def init
@@ -53,14 +60,18 @@ module Vop
       call_hook :preload
       load_helpers
       load_config
-      # TODO we might want to activate/register only plugins with enough config
-      call_hook :init
-      load_commands
-      call_hook :activate
+
+      if @options[:autoload] || @config
+        # TODO we might want to activate/register only plugins with enough config
+        call_hook :init
+        load_commands
+        load_filters
+        call_hook :activate
+      end
     end
 
     def plugin_dir(name)
-      @path + '/' + name.to_s
+      File.join(@path, name.to_s)
     end
 
     def load_code_from_dir(type_name)
@@ -135,6 +146,14 @@ module Vop
       end
     end
 
+    def load_filters
+      load_code_from_dir :filters
+
+      loader = FilterLoader.new(self)
+      @filters = loader.read_sources @sources[:filters]
+      @op.eat(@filters.values) unless @filters.size == 0
+    end
+
     def load_config
       if File.exists? @config_file_name
         begin
@@ -162,5 +181,4 @@ module Vop
     end
 
   end
-
 end

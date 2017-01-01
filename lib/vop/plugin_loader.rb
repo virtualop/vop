@@ -2,7 +2,6 @@ require 'vop/plugin'
 require 'pp'
 
 module Vop
-
   class PluginLoader
 
     attr_reader :op
@@ -28,7 +27,7 @@ module Vop
     def on(hook_sym, &block)
       @plugin.hook(hook_sym, &block)
 
-      core_hooks = %i|before_execute after_execute|
+      core_hooks = %i|before_execute after_execute execute|
       if core_hooks.include? hook_sym
         @op.hook(hook_sym, @plugin.name)
       end
@@ -38,6 +37,11 @@ module Vop
       @plugin.dependencies << sym.to_s
     end
     alias_method :depends, :dependency
+
+    def autoload(value)
+      # TODO make this work on template level?
+      @plugin.options[:autoload] = value
+    end
 
     def read_plugin_template
       template_path = File.join(@dir, 'plugin.vop')
@@ -84,5 +88,4 @@ module Vop
     end
 
   end
-
 end

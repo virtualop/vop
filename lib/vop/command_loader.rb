@@ -26,6 +26,12 @@ module Vop
       @command.block = block
     end
 
+    # TODO kill
+    def filter(&block)
+      @command.block = block
+      #@op.add_filter(@command)
+    end
+
     def read_sources(named_commands)
       # reads a hash of <command_name> => <source string>
       named_commands.each do |name, source|
@@ -35,7 +41,7 @@ module Vop
         begin
           self.instance_eval(source[:code], source[:file_name])
         rescue => detail
-          raise "problem loading plugin #{name} : #{detail.message}\n#{detail.backtrace.join("\n")}"
+          raise "problem loading commannd #{name} : #{detail.message}\n#{detail.backtrace.join("\n")}"
         end
       end
 
