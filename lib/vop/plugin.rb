@@ -165,8 +165,8 @@ module Vop
     end
 
     def write_config
-      unless File.exists? ::Vop::PLUGIN_CONFIG_PATH
-        FileUtils.mkdir_p ::Vop::PLUGIN_CONFIG_PATH
+      unless File.exists? @op.plugin_config_path
+        FileUtils.mkdir_p @op.plugin_config_path
       end
       File.open(@config_file_name, 'w') do |file|
         file.write @config.to_json()

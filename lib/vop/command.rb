@@ -143,13 +143,7 @@ module Vop
           param = context
         when 'shell'
           raise "shell not supported" unless extra.has_key? 'shell'
-          param = extra['shell']
-        when 'request'
-          # TODO not sure we really need to create this again
-          param = Request.new(self.short_name, param_values, extra)
-        when 'chain'
-          raise "chain not supported" unless extra.has_key? 'chain'
-          param = extra['chain']
+          param = extra['shell']      
         else
           if prepared.has_key? name.to_s
             param = prepared[name.to_s]

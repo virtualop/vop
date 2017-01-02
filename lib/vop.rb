@@ -52,6 +52,7 @@ module Vop
 
       $logger.debug "config : #{@config.inspect}"
 
+      clear
       _reset
 
       $logger.info "virtualop (#{@version}) init complete."
@@ -65,7 +66,7 @@ module Vop
     def _reset
       $logger.debug "loading..."
 
-      load_plugins
+      load_plugins_twice
 
       loaded = "#{@commands.size} commands"
       $logger.info "loaded #{loaded} from #{@plugins.size} plugins"
@@ -99,6 +100,7 @@ module Vop
     end
 
     def add_to_search_path(new_path)
+      core.config ||= {}
       core.config['search_path'] ||= []
       core.config['search_path'] << new_path
     end
@@ -126,6 +128,14 @@ module Vop
     #   end
     #   "vop #{@version} (#{plugin_string})"
     # end
+
+    def clear
+      @plugins = {}
+      @commands = {}
+      @filters = {}
+      @filter_chain = []
+      @hooks = Hash.new { |h,k| h[k] = [] }
+    end
 
     def eat(stuff)
       if stuff.is_a? Array
@@ -156,15 +166,11 @@ module Vop
     end
 
     def load_plugins
-      @plugins = {}
-      @commands = {}
-      @filters = {}
-      @filter_chain = []
-      @hooks = Hash.new { |h,k| h[k] = [] }
-
       # step 1 : read plugins from all existing source dirs
       candidates = self._search_path
       search_path = candidates.select { |path| File.exists? path }
+      self.clear()
+
       search_path.each do |path|
         PluginLoader.read(self, path)
       end
@@ -251,11 +257,6 @@ module Vop
       resolved.map { |x| @plugins[x] }
     end
 
-    def add_filter(command)
-      raise "kill?"
-      @filters << command
-    end
-
     def hook(name, plugin_name)
       @hooks[name] << plugin_name
     end
@@ -268,7 +269,6 @@ module Vop
 
     def execute_request(request)
       call_hook :before_execute, request
-
       response = request.execute()
       call_hook :after_execute, request, response
 
