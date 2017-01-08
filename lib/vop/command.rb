@@ -89,8 +89,10 @@ module Vop
 
               # convert booleans
               if p[:boolean]
-                $logger.info("converting #{p[:name]} into boolean")
-                v = /[tT]rue|[yY]es|[oO]n/ =~ v
+                unless [true, false].include? v
+                  $logger.info("converting #{p[:name]} into boolean")
+                  v = /[tT]rue|[yY]es|[oO]n/ =~ v
+                end
               end
             end
             result[k] = v
@@ -143,7 +145,7 @@ module Vop
           param = context
         when 'shell'
           raise "shell not supported" unless extra.has_key? 'shell'
-          param = extra['shell']      
+          param = extra['shell']
         else
           if prepared.has_key? name.to_s
             param = prepared[name.to_s]
