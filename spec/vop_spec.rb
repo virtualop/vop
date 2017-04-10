@@ -1,7 +1,7 @@
+require 'spec_helper'
 require 'vop'
 require 'pp'
 require 'fileutils'
-require 'spec_helper'
 
 RSpec.describe Vop do
 
@@ -10,30 +10,28 @@ RSpec.describe Vop do
     prepare
   end
 
-  it "makes vop commands available as methods" do
+  it "has plugins" do
     plugins = @vop.list_plugins
     expect(plugins.size).to be > 0
   end
 
-  it "uses code from helpers and reads config" do
+  it "reads config" do
     expect(@vop.identity).to_not be_nil
   end
 
-  it "should accept named params" do
+  it "accepts named params" do
     expect(@vop.source('name' => 'source')).to_not be_nil
   end
 
-  it "should accept default params" do
+  it "accepts default params" do
     expect(@vop.source('source')).to_not be_nil
   end
 
   it "should allow to create and remove plugins" do
     old_plugin_list = @vop.list_plugins
-    puts "old_plugin_list : #{old_plugin_list.inspect}"
     new_plugin = @vop.new_plugin('path' => SpecHelper::TEST_SRC_PATH, 'name' => 'rspec_test')
     expect(new_plugin).to_not be_nil
     new_plugin_list = @vop.list_plugins
-    puts "new_plugin_list : #{new_plugin_list.join("\n")}"
     expect(new_plugin_list.length).to be > old_plugin_list.length
 
     old_plugin_list = new_plugin_list
@@ -41,6 +39,26 @@ RSpec.describe Vop do
     expect(result).to_not be_nil
     new_plugin_list = @vop.list_plugins
     expect(new_plugin_list.length).to be < old_plugin_list.length
+  end
+
+  it "loads optional plugins if they are configured" do
+    plugin_names = @vop.list_plugins.map { |x| x[:name] }
+    expect(plugin_names).to include("core")
+    expect(plugin_names).to_not include("foo")
+
+    foo = @vop.new_plugin("path" => SpecHelper::TEST_SRC_PATH, "name" => "foo", "content" => "autoload false")
+    transmogrify = @vop.new_command("plugin" => "foo", "name" => "transmogrify", "content" => "run { 42 }")
+    plugins = @vop.list_plugins
+    expect(plugins.map { |x| x[:name] }).to include("foo")
+    foo_plugin = plugins.select { |x| x[:name] == "foo" }.first
+    expect(foo_plugin[:loaded]).to be false
+
+    @vop.plugins["foo"].config = {}
+    @vop.write_plugin_config "foo"
+    @vop.reset
+
+    plugin_names = @vop.list_plugins.map { |x| x[:name] }
+    expect(plugin_names).to include("foo")
   end
 
 end

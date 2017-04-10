@@ -14,6 +14,7 @@ module Vop
     attr_reader :dependencies
 
     attr_reader :state
+    attr_reader :loaded
 
     def initialize(op, plugin_name, plugin_path, options = {})
       @op = op
@@ -23,6 +24,8 @@ module Vop
         autoload: true
       }
       @options = defaults.merge(options)
+
+      @loaded = false
 
       @config = nil
       @dependencies = []
@@ -67,6 +70,7 @@ module Vop
         load_commands
         load_filters
         call_hook :activate
+        @loaded = true
       end
     end
 
@@ -156,10 +160,12 @@ module Vop
 
     def load_config
       if File.exists? @config_file_name
+        raw = nil
         begin
-          @config = JSON.parse(IO.read(@config_file_name))
+          raw = IO.read(@config_file_name)
+          @config = JSON.parse(raw)
         rescue
-          $logger.error "could not read JSON config from #{@config_file_name}, ignoring"
+          $logger.error "could not read JSON config from #{@config_file_name}, ignoring:\n#{raw}"
         end
       end
     end

@@ -84,6 +84,7 @@ class VopShellBackend < Backend
 
           # names of all params that have not been specified yet or are :multi
           command.params.each do |param|
+            raise "sanity check: no name found for #{param.inspect}"
             if not param_values.keys.include? param[:name] || param[:multi]
               list << param[:name]
             end
@@ -102,6 +103,8 @@ class VopShellBackend < Backend
     the_filter = parts ? parts.last : word
     if the_filter
       $logger.debug "filtering completion list against : #{the_filter}"
+      $logger.debug "first list item : #{list.first.inspect}"
+      $logger.debug "list: #{list.inspect}"
       list.delete_if do |x|
         x[0...the_filter.size] != the_filter
       end

@@ -1,15 +1,16 @@
+require 'spec_helper'
 require 'vop'
+require 'vop/entity'
 require 'pp'
 require 'fileutils'
-require 'spec_helper'
 
 RSpec.describe Vop do
 
 PERSON = <<EOT
 entity('number') do |params|
   [
-    {name: "Beeblebrox", first_name: "Zaphod", number: 42},
-    {name: "Bond", first_name: "James", number: 007}
+    { name: "Beeblebrox", first_name: "Zaphod", number: 42 },
+    { name: "Bond", first_name: "James", number: 007 }
   ]
 end
 
@@ -41,6 +42,11 @@ EOT
     new_plugin = @vop.new_plugin("path" => SpecHelper::TEST_SRC_PATH, "name" => "entity_test")
     entity_command = @vop.new_command("plugin" => "entity_test", "name" => name, "content" => content)
     expect(@vop.list_entities).to include(name)
+  end
+
+  it "is only here for test coverage" do
+    entity = Vop::Entity.new(@vop, "cake", "mascarpone", {foo: "snafoo"})
+    expect(entity.inspect).to_not be_nil
   end
 
   it "allows to define entities" do

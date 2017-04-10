@@ -19,11 +19,11 @@ module Vop
   class Vop
 
     DEFAULTS = {
-      "search_path" => [
+      search_path: [
         File.join(VOP_ROOT, "..", "plugins/standard"),
         File.join(VOP_ROOT, "..", "plugins/extended")
       ],
-      "config_path" => "/etc/vop"
+      config_path: "/etc/vop"
     }
 
     attr_reader :config
@@ -38,13 +38,13 @@ module Vop
 
       @version = ::Vop::VERSION
 
-      @config_path = options[:config_path] || DEFAULTS["config_path"]
+      @config_path = options[:config_path] || DEFAULTS[:config_path]
       @config = DEFAULTS.merge(load_system_config).merge(options)
 
       if options.has_key? :search_path
         osp = options[:search_path]
         osp = [ osp ] unless osp.is_a?(Array)
-        @config['search_path'] += osp
+        @config[:search_path] += osp
       end
 
       $logger = Logger.new(STDOUT)
@@ -74,13 +74,21 @@ module Vop
 
     def _search_path
       result = [ CORE_PLUGIN_PATH ] # static path
-      result += config['search_path'] # config from /etc/vop
+      result += config[:search_path] # config from /etc/vop
 
-      if core && core.config && core.config["search_path"]
-        result += core.config["search_path"] # core plugin config
+      if core && core.config && core.config[:search_path]
+        result += core.config[:search_path] # core plugin config
       end
 
       result
+    end
+
+    def clear
+      @plugins = {}
+      @commands = {}
+      @filters = {}
+      @filter_chain = []
+      @hooks = Hash.new { |h,k| h[k] = [] }
     end
 
     def plugin_config_path
@@ -100,9 +108,10 @@ module Vop
     end
 
     def add_to_search_path(new_path)
+      #raise "untested"
       core.config ||= {}
-      core.config['search_path'] ||= []
-      core.config['search_path'] << new_path
+      core.config[:search_path] ||= []
+      core.config[:search_path] << new_path
     end
 
     def load_system_config
@@ -129,14 +138,7 @@ module Vop
     #   "vop #{@version} (#{plugin_string})"
     # end
 
-    def clear
-      @plugins = {}
-      @commands = {}
-      @filters = {}
-      @filter_chain = []
-      @hooks = Hash.new { |h,k| h[k] = [] }
-    end
-
+    # accepts Commands and Filters (or arrays of them) and loads them
     def eat(stuff)
       if stuff.is_a? Array
         inspected = [stuff.inspect, "#{stuff.size} elements"].join(" ")

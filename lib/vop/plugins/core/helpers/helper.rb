@@ -1,7 +1,3 @@
-def foo
-  puts "call for mr. beeblebrox!"
-end
-
 require "erb"
 
 def read_template(name)
