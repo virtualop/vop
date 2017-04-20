@@ -9,17 +9,17 @@ module Vop
       $logger.debug("scanning #{dirs} for plugins...")
       dirs = [ dirs ] unless dirs.is_a? Array
 
-      plugin_files = []
-      template_files = []
+      plugins = []
+      templates = []
 
       dirs.each do |dir|
         next unless File.exists? dir
 
-        plugin_files += Dir.glob("#{dir}/**/*.plugin").map { |x| File.dirname(x) }
-        template_files += Dir.glob("#{dir}/**/plugin.vop")
+        plugins += Dir.glob("#{dir}/**/*.plugin").map { |x| Pathname.new(File.dirname(x)).realpath.to_s }
+        templates += Dir.glob("#{dir}/**/plugin.vop").map { |x| Pathname.new(x).realpath.to_s }
       end
 
-      [plugin_files, template_files]
+      [plugins, templates]
     end
 
     def inspect(plugin_path)

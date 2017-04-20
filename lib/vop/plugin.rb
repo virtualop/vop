@@ -1,5 +1,7 @@
-require "vop/command_loader"
 require "erb"
+require_relative "command_loader"
+require_relative "helpers/symbolize_helper"
+using SymbolizeHelper
 
 module Vop
   class Plugin
@@ -59,7 +61,7 @@ module Vop
     end
 
     def init
-      $logger.debug "plugin init #{@name}"
+      $logger.debug "plugin init : #{@name}"
       call_hook :preload
       load_helpers
       load_config
@@ -163,9 +165,9 @@ module Vop
         raw = nil
         begin
           raw = IO.read(@config_file_name)
-          @config = JSON.parse(raw)
-        rescue
-          $logger.error "could not read JSON config from #{@config_file_name}, ignoring:\n#{raw}"
+          @config = JSON.parse(raw).deep_symbolize_keys
+        rescue => e
+          $logger.error "could not read JSON config from #{@config_file_name} (#{e.message}), ignoring:\n#{raw}"
         end
       end
     end

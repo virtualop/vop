@@ -33,6 +33,16 @@ end
 
 EOT
 
+COMMAND_THAT_USES_ENTITY = <<'EOT'
+param :thing
+
+run do |params|
+  thing = params["thing"]
+  "walking with #{thing}"
+end
+
+EOT
+
   include SpecHelper
   before(:example) do
     prepare
@@ -59,6 +69,15 @@ EOT
     entity_command = @vop.new_command("plugin" => "entity_test", "name" => "cool_thing", "content" => COOL_THING)
     expect(@vop.list_things).to_not be_nil
     expect(@vop.cool_thing("Chucks")).to_not be_nil
+  end
+
+  it "automagically registers commands for an entity as methods" do
+    setup_entity("thing", THING_THAT_SHOULD_WORK)
+    entity_command = @vop.new_command("plugin" => "entity_test", "name" => "cool_thing", "content" => COOL_THING)
+    command = @vop.new_command("plugin" => "entity_test", "name" => "walk", "content" => COMMAND_THAT_USES_ENTITY)
+    entity = @vop.thing("Chucks")
+    expect(entity).to_not be_nil
+    expect(entity.walk).to_not be_nil
   end
 
 end

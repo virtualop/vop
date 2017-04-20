@@ -10,9 +10,22 @@ RSpec.describe Vop do
     prepare
   end
 
+  it "has diagnostics" do
+    diag = @vop.diagnostics
+    expect(diag).to_not be_nil
+  end
+
+  it "is inspectable" do
+    expect(@vop.inspect).to_not be_nil
+  end
+
   it "has plugins" do
     plugins = @vop.list_plugins
     expect(plugins.size).to be > 0
+  end
+
+  it "only hands out existing commands" do
+    expect { @vop.command("transmogrify") }.to raise_error
   end
 
   it "reads config" do
@@ -25,6 +38,27 @@ RSpec.describe Vop do
 
   it "accepts default params" do
     expect(@vop.source('source')).to_not be_nil
+  end
+
+  it "complains about missing mandatory params" do
+    expect { @vop.source() }.to raise_error(RuntimeError)
+  end
+
+  it "shows mandatory params" do
+    source_cmd = @vop.commands["source"]
+    expect(source_cmd.mandatory_params.size).to be == 1
+  end
+
+  it "returns lookups" do
+    source_cmd = @vop.commands["source"]
+    expect(source_cmd.lookup("name", {}).size).to be > 0
+  end
+
+  it "allows to extend the search path" do
+    new_path = File.join(SpecHelper::TEST_SRC_PATH, "foo")
+    @vop.add_search_path(new_path)
+    puts "+++ extended search path : #{@vop.show_search_path} +++"
+    expect(@vop.show_search_path).to include(new_path)
   end
 
   it "should allow to create and remove plugins" do
@@ -54,7 +88,7 @@ RSpec.describe Vop do
     expect(foo_plugin[:loaded]).to be false
 
     @vop.plugins["foo"].config = {}
-    @vop.write_plugin_config "foo"
+    @vop.plugins["foo"].write_config
     @vop.reset
 
     plugin_names = @vop.list_plugins.map { |x| x[:name] }

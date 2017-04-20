@@ -1,6 +1,6 @@
 require 'vop'
-require 'vop/shell/vop_shell_backend'
-require 'vop/shell/base_shell'
+require_relative 'shell/vop_shell_backend'
+require_relative 'shell/base_shell'
 
 require 'docopt'
 require 'pp'

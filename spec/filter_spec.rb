@@ -22,9 +22,15 @@ RSpec.describe Vop::Filter do
     expect(@vop.filters.keys).to include name
   end
 
-SLARTIBART = <<EOT
-run do
-  raise ::Vop::DoNotContinue.new("slartibartfast", {})
+SLARTIBART = <<'EOT'
+run do |command, request|
+  puts "slartibartfast filtering #{command.short_name}"
+  if command.short_name == "identity"
+    raise ::Vop::DoNotContinue.new("slartibartfast", {})
+  else
+    (fresh_result, _context) = request.next_filter.execute_request(request)
+    fresh_result
+  end
 end
 
 EOT

@@ -1,4 +1,6 @@
-param! "name", :lookup => lambda { @op.list_commands.map { |x| x[:name] } }
+param! "name",
+  description: "a command for which help should be displayed",
+  lookup: lambda { |params| @op.list_commands.map { |x| x[:name] } }
 
 run do |params|
   puts

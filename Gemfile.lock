@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    vop (0.3.2)
+    vop (0.3.3)
       activesupport
       docopt
       net-scp

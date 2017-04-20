@@ -26,12 +26,6 @@ module Vop
       @command.block = block
     end
 
-    # TODO kill
-    def filter(&block)
-      @command.block = block
-      #@op.add_filter(@command)
-    end
-
     def read_sources(named_commands)
       # reads a hash of <command_name> => <source string>
       named_commands.each do |name, source|

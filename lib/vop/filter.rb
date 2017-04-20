@@ -29,6 +29,10 @@ module Vop
       @name.split(".").last
     end
 
+    def inspect
+      "Vop::Filter #{@name}"
+    end
+
     def execute(command_name, param_values, extra = {}, request = nil)
       block_param_names = self.block.parameters.map { |x| x.last }
 
@@ -45,7 +49,7 @@ module Vop
           raise "sanity check failed: request nil" if request.nil?
           request
         when 'command'
-          @plugin.op.command(command_name.split(".").first)
+          @plugin.op.command(command_name.split(".").first) # TODO shouldn't this be .last ?
         when 'plugin'
           @plugin
         else

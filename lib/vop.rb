@@ -1,15 +1,15 @@
-require 'pp'
+require 'active_support/inflector'
+require 'json'
 require 'logger'
 require 'pathname'
+require 'pp'
 require 'yaml'
-require 'json'
-require 'active_support/inflector'
 
-require 'vop/version'
-require 'vop/request'
-require 'vop/plugin_finder'
-require 'vop/plugin_loader'
-require 'vop/loaders/filter_loader'
+require_relative 'vop/loaders/filter_loader'
+require_relative 'vop/loaders/plugin_loader'
+require_relative 'vop/plugin_finder'
+require_relative 'vop/request'
+require_relative 'vop/version'
 
 module Vop
 
@@ -19,10 +19,7 @@ module Vop
   class Vop
 
     DEFAULTS = {
-      search_path: [
-        File.join(VOP_ROOT, "..", "plugins/standard"),
-        File.join(VOP_ROOT, "..", "plugins/extended")
-      ],
+      search_path: [],
       config_path: "/etc/vop"
     }
 
@@ -39,7 +36,8 @@ module Vop
       @version = ::Vop::VERSION
 
       @config_path = options[:config_path] || DEFAULTS[:config_path]
-      @config = DEFAULTS.merge(load_system_config).merge(options)
+      system_config = load_system_config()
+      @config = DEFAULTS.merge(system_config).merge(options)
 
       if options.has_key? :search_path
         osp = options[:search_path]
@@ -52,7 +50,6 @@ module Vop
 
       $logger.debug "config : #{@config.inspect}"
 
-      clear
       _reset
 
       $logger.info "virtualop (#{@version}) init complete."
@@ -65,22 +62,9 @@ module Vop
 
     def _reset
       $logger.debug "loading..."
+      clear && load_thyself
 
-      load_plugins_twice
-
-      loaded = "#{@commands.size} commands"
-      $logger.info "loaded #{loaded} from #{@plugins.size} plugins"
-    end
-
-    def _search_path
-      result = [ CORE_PLUGIN_PATH ] # static path
-      result += config[:search_path] # config from /etc/vop
-
-      if core && core.config && core.config[:search_path]
-        result += core.config[:search_path] # core plugin config
-      end
-
-      result
+      $logger.info "loaded #{@commands.size} commands from #{@plugins.size} plugins"
     end
 
     def clear
@@ -89,6 +73,27 @@ module Vop
       @filters = {}
       @filter_chain = []
       @hooks = Hash.new { |h,k| h[k] = [] }
+    end
+
+    def core_path
+      [ CORE_PLUGIN_PATH ] + # static path
+      config[:search_path] # config from /etc/vop
+    end
+
+    def search_path
+      result = []
+
+      if core && core.config && core.config[:search_path]
+        result += core.config[:search_path] # core plugin config
+      end
+
+      result
+    end
+
+    def add_to_search_path(new_path)
+      core.config ||= {}
+      core.config[:search_path] ||= []
+      core.config[:search_path] << new_path
     end
 
     def plugin_config_path
@@ -107,13 +112,6 @@ module Vop
       @plugins['core']
     end
 
-    def add_to_search_path(new_path)
-      #raise "untested"
-      core.config ||= {}
-      core.config[:search_path] ||= []
-      core.config[:search_path] << new_path
-    end
-
     def load_system_config
       if File.exists? @config_path
         main_config_root = File.join(@config_path, 'vop.')
@@ -128,15 +126,15 @@ module Vop
       end
     end
 
-    # def inspect
-    #   chunk_size = 25
-    #   plugins = @plugins || {}
-    #   plugin_string = plugins.keys.sort[0..chunk_size-1].join(' ')
-    #   if plugins.length > chunk_size
-    #     plugin_string += " + #{plugins.length - chunk_size} more"
-    #   end
-    #   "vop #{@version} (#{plugin_string})"
-    # end
+    def inspect
+      chunk_size = 25
+      plugins = @plugins || {}
+      plugin_string = plugins.keys.sort[0..chunk_size-1].join(' ')
+      if plugins.length > chunk_size
+        plugin_string += " + #{plugins.length - chunk_size} more"
+      end
+      "vop #{@version} (#{plugin_string})"
+    end
 
     # accepts Commands and Filters (or arrays of them) and loads them
     def eat(stuff)
@@ -164,18 +162,17 @@ module Vop
           raise "don't know how to process #{stuff.class}"
         end
       end
-
     end
 
-    def load_plugins
-      # step 1 : read plugins from all existing source dirs
-      candidates = self._search_path
-      search_path = candidates.select { |path| File.exists? path }
-      self.clear()
+    def load_from(path)
+      $logger.info "loading from #{path.join(" ")}"
+      finder = PluginFinder.new(self)
+      (plugins, templates) = finder.scan(path)
 
-      search_path.each do |path|
-        PluginLoader.read(self, path)
-      end
+      $logger.debug "plugins: #{plugins.inspect}"
+      $logger.debug "templates: #{templates.inspect}"
+
+      loader = PluginLoader.read(self, plugins, templates)
 
       # step 2 : activate plugins (in the right order)
       ordered_plugins.each do |plugin|
@@ -189,7 +186,7 @@ module Vop
 
         # list_<entities>
         list_command_name = "list_#{entity_name.pluralize(42)}"
-        $logger.debug "generating #{list_command_name}"
+        $logger.debug "generating entity command #{list_command_name}"
         list_command = Command.new(entity_command.plugin, list_command_name)
         list_command.read_only = true
 
@@ -205,25 +202,20 @@ module Vop
         eat(list_command)
         # TODO add pseudo source code so that `source <list_command_name>` works
       end
-
-      # TODO add pre-flight hook so that plugins can attach logic to execute here
     end
 
-    # plugins are configured when they are loaded; the search path is part of the
-    # 'core' plugin's config, so we load plugins again with a potentially
-    # extended search path
-    # TODO we can probably do this more elegantly
-    def load_plugins_twice
-      first_search_path = _search_path
-      load_plugins
-      second_search_path = _search_path
-      if second_search_path != first_search_path
-        load_plugins
+    def load_thyself
+      load_from core_path
+
+      if core && core.config && core.config[:search_path]
+        load_from core.config[:search_path]
       end
-      third_search_path = _search_path
-      if third_search_path != second_search_path
-        $logger.warn "search path changed again during second load, not falling for it."
-      end
+
+      new_paths = self.search_gems_for_plugins
+      new_paths.each do |new_path|
+        $logger.info "found new gem plugins, adding #{new_path} to the search path..."
+        self.add_search_path new_path
+      end unless new_paths.nil?
     end
 
     def resolve(plugin, resolved, unresolved, level = 0)
