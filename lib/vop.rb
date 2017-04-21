@@ -63,8 +63,11 @@ module Vop
     def _reset
       $logger.debug "loading..."
       clear && load_thyself
-
       $logger.info "loaded #{@commands.size} commands from #{@plugins.size} plugins"
+    end
+
+    def shutdown()
+      $logger.debug "shutting down..."
     end
 
     def clear
@@ -126,16 +129,6 @@ module Vop
       end
     end
 
-    def inspect
-      chunk_size = 25
-      plugins = @plugins || {}
-      plugin_string = plugins.keys.sort[0..chunk_size-1].join(' ')
-      if plugins.length > chunk_size
-        plugin_string += " + #{plugins.length - chunk_size} more"
-      end
-      "vop #{@version} (#{plugin_string})"
-    end
-
     # accepts Commands and Filters (or arrays of them) and loads them
     def eat(stuff)
       if stuff.is_a? Array
@@ -165,9 +158,10 @@ module Vop
     end
 
     def load_from(path)
-      $logger.info "loading from #{path.join(" ")}"
-      finder = PluginFinder.new(self)
-      (plugins, templates) = finder.scan(path)
+      $logger.debug "loading from #{path.join(" ")}"
+
+      # step 1 : find and load plugins
+      (plugins, templates) = PluginFinder.find(self, path)
 
       $logger.debug "plugins: #{plugins.inspect}"
       $logger.debug "templates: #{templates.inspect}"
@@ -199,17 +193,16 @@ module Vop
           }
         end
         list_command.block = entity_command.param(entity[:key])[:lookup]
+
         eat(list_command)
+
         # TODO add pseudo source code so that `source <list_command_name>` works
       end
     end
 
     def load_thyself
       load_from core_path
-
-      if core && core.config && core.config[:search_path]
-        load_from core.config[:search_path]
-      end
+      load_from search_path unless search_path.nil?
 
       new_paths = self.search_gems_for_plugins
       new_paths.each do |new_path|
@@ -276,8 +269,14 @@ module Vop
       response.result
     end
 
-    def shutdown()
-      $logger.debug "shutting down..."
+    def inspect
+      chunk_size = 25
+      plugins = @plugins || {}
+      plugin_string = plugins.keys.sort[0..chunk_size-1].join(' ')
+      if plugins.length > chunk_size
+        plugin_string += " + #{plugins.length - chunk_size} more"
+      end
+      "vop #{@version} (#{plugin_string})"
     end
 
   end

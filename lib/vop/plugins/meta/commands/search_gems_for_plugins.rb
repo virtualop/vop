@@ -11,11 +11,10 @@ run do |params|
   # end
   # puts "gemspec md5 : #{checksum.hexdigest}"
 
-  search_path = @op.show_search_path
   result = []
 
   candidates.each do |candidate|
-    puts "inspecting #{candidate}"
+    $logger.debug "inspecting #{candidate}"
 
     gem_path = candidate.full_gem_path
 
@@ -32,14 +31,15 @@ run do |params|
       if FileTest.file?(path)
         if File.basename(path).split('.').last == 'plugin'
           unless result.include? gem_path
-            unless search_path.include? gem_path
-              result << gem_path
-            end
+            result << gem_path
           end
         end
       end
     end
   end
+
+  search_path = @op.show_search_path
+  result.delete_if { |x| search_path.include? x }
 
   result
 end

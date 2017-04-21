@@ -95,4 +95,8 @@ RSpec.describe Vop do
     expect(plugin_names).to include("foo")
   end
 
+  # TODO it does not load plugins twice
+  # TODO it actually applies the plugin templates it finds
+  # TODO it calls a plugin's init method only once
+
 end

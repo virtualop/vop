@@ -1,4 +1,5 @@
 module Vop
+
   class PluginFinder
 
     def initialize(op)
@@ -49,5 +50,11 @@ module Vop
       result
     end
 
+    def self.find(op, dirs)
+      instance = PluginFinder.new(op)
+      instance.scan(dirs)
+    end
+
   end
+
 end

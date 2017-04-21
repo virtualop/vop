@@ -4,8 +4,11 @@ module Vop
 
   class PluginLoader
 
+    attr_reader :loaded
+
     def initialize(vop)
       @op = vop
+      @loaded = []
     end
 
     def new_plugin(plugin_name, plugin_path)
@@ -65,6 +68,8 @@ module Vop
         rescue => detail
           raise "problem loading plugin #{name} : #{detail.message}\n#{detail.backtrace.join("\n")}"
         end
+
+        loader.loaded << plugin
 
         $logger.debug "loaded plugin #{name}"
       end
