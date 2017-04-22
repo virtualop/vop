@@ -1,3 +1,5 @@
+# found on StackOverflow, I believe, but kudos seem to belong to https://gist.github.com/EdvardM/9639051
+
 module SymbolizeHelper
   extend self
 

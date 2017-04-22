@@ -18,8 +18,6 @@ module Vop
       # (this will allow plugins to define helpers that can be used in plugins)
       #@plugin.inject_helpers(self)
       #@plugin.inject_helpers(self, 'plugin_loader')
-
-      @op.plugins[plugin_name] = @plugin
       @plugin
     end
 

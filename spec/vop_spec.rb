@@ -95,8 +95,26 @@ RSpec.describe Vop do
     expect(plugin_names).to include("foo")
   end
 
-  # TODO it does not load plugins twice
+PLUGIN_WITH_INIT_COUNT = <<'EOF'
+on :init do |plugin|
+  plugin.state[:init_count] = (plugin.state[:init_count] || 0) + 1
+end
+EOF
+
+INIT_COUNT_ACCESS_COMMAND = <<'EOF'
+run do |plugin|
+  plugin.state[:init_count]
+end
+EOF
+
+  it "calls init only once" do
+    special = @vop.new_plugin("path" => SpecHelper::TEST_SRC_PATH, "name" => "init_count", "content" => PLUGIN_WITH_INIT_COUNT)
+    init_count = @vop.new_command("plugin" => "init_count", "name" => "show_init_count", "content" => INIT_COUNT_ACCESS_COMMAND)
+    expect(@vop.list_commands.map { |x| x[:name]} ).to include "show_init_count"
+    expect(@vop.show_init_count).to be 1
+  end
+
   # TODO it actually applies the plugin templates it finds
-  # TODO it calls a plugin's init method only once
+  # TODO it does not load plugins twice
 
 end

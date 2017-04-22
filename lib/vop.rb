@@ -10,6 +10,7 @@ require_relative 'vop/loaders/plugin_loader'
 require_relative 'vop/plugin_finder'
 require_relative 'vop/request'
 require_relative 'vop/version'
+require_relative 'vop/helpers/dependency_resolver'
 
 module Vop
 
@@ -129,7 +130,7 @@ module Vop
       end
     end
 
-    # accepts Commands and Filters (or arrays of them) and loads them
+    # loads Plugins, Commands and Filters (or arrays of them)
     def eat(stuff)
       if stuff.is_a? Array
         inspected = [stuff.inspect, "#{stuff.size} elements"].join(" ")
@@ -139,7 +140,11 @@ module Vop
         end
       else
         $logger.debug "eating #{stuff.inspect}"
-        if stuff.is_a? Command
+        if stuff.is_a? Plugin
+          @plugins[stuff.name] = stuff
+          $logger.debug "about to init #{stuff.name}"
+          stuff.init
+        elsif stuff.is_a? Command
           command = stuff
           @commands[command.short_name] = command
 
@@ -166,11 +171,19 @@ module Vop
       $logger.debug "plugins: #{plugins.inspect}"
       $logger.debug "templates: #{templates.inspect}"
 
-      loader = PluginLoader.read(self, plugins, templates)
+      fresh = PluginLoader.read(self, plugins, templates)
 
-      # step 2 : activate plugins (in the right order)
-      ordered_plugins.each do |plugin|
-        plugin.init
+      # step 2 : activate new plugins (in the right order)
+      $logger.debug "activating #{fresh.loaded.inspect}"
+
+      all_plugins = @plugins.merge(
+        fresh.loaded.map { |plugin| [plugin.name, plugin] }.to_h
+      )
+
+      DependencyResolver.order(self, all_plugins).each do |plugin|
+        if fresh.loaded.include? plugin
+          eat(plugin)
+        end
       end
 
       # step 3 : expand entities
@@ -202,46 +215,13 @@ module Vop
 
     def load_thyself
       load_from core_path
-      load_from search_path unless search_path.nil?
+      load_from search_path if search_path
 
       new_paths = self.search_gems_for_plugins
       new_paths.each do |new_path|
         $logger.info "found new gem plugins, adding #{new_path} to the search path..."
         self.add_search_path new_path
       end unless new_paths.nil?
-    end
-
-    def resolve(plugin, resolved, unresolved, level = 0)
-      unresolved << plugin.name
-
-      plugin.dependencies.each do |dep|
-        unless resolved.include? dep
-          if unresolved.include? dep
-            raise "running in circles #{plugin.name} -> #{dep}"
-          else
-            unless @plugins.has_key? dep
-              raise "missing dependency: #{plugin.name} depends on #{dep}"
-            end
-            dependency = @plugins[dep]
-            resolve(dependency, resolved, unresolved, level + 1)
-          end
-        end
-      end
-      resolved << plugin.name
-    end
-
-    def ordered_plugins
-      root_plugin = Plugin.new(self, '__root__', nil)
-      @plugins.values.each do |plugin|
-        root_plugin.dependencies << plugin.name
-      end
-      resolved = []
-      unresolved = []
-
-      resolve(root_plugin, resolved, unresolved)
-      resolved.delete_if { |x| x == root_plugin.name }
-
-      resolved.map { |x| @plugins[x] }
     end
 
     def hook(name, plugin_name)
