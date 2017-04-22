@@ -5,12 +5,12 @@ require 'pathname'
 require 'pp'
 require 'yaml'
 
-require_relative 'vop/loaders/filter_loader'
+require_relative 'vop/helpers/dependency_resolver'
+require_relative 'vop/helpers/plugin_finder'
 require_relative 'vop/loaders/plugin_loader'
-require_relative 'vop/plugin_finder'
+require_relative 'vop/loaders/filter_loader'
 require_relative 'vop/request'
 require_relative 'vop/version'
-require_relative 'vop/helpers/dependency_resolver'
 
 module Vop
 

@@ -1,5 +1,5 @@
 require "erb"
-require_relative "command_loader"
+require_relative "loaders/command_loader"
 require_relative "helpers/symbolize_helper"
 using SymbolizeHelper
 

@@ -1,5 +1,5 @@
 require "spec_helper"
-require "vop/plugin_finder"
+require "vop/helpers/plugin_finder"
 
 RSpec.describe "plugin finder" do
 

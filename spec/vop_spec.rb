@@ -95,6 +95,18 @@ RSpec.describe Vop do
     expect(plugin_names).to include("foo")
   end
 
+  it "lets you access plugin config through symbols" do
+    foo = @vop.new_plugin("path" => SpecHelper::TEST_SRC_PATH, "name" => "foo", "content" => "")
+    plugins = @vop.list_plugins
+    expect(plugins.map { |x| x[:name] }).to include("foo")
+
+    @vop.plugins["foo"].config = {"zaphod" => "beeblebrox", "list" => ["foo", "bar", "baz"], "hash" => {"but" => "not", "yet" => "legal", "every" => "where"}}
+    @vop.plugins["foo"].write_config
+    @vop.reset
+
+    expect(@vop.plugins["foo"].config[:zaphod]).to eq "beeblebrox"
+  end
+
 PLUGIN_WITH_INIT_COUNT = <<'EOF'
 on :init do |plugin|
   plugin.state[:init_count] = (plugin.state[:init_count] || 0) + 1
