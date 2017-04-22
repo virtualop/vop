@@ -71,7 +71,7 @@ module Vop
         call_hook :init
         load_commands
         load_filters
-        call_hook :activate
+        call_hook :loaded
         @loaded = true
       end
     end

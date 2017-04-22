@@ -142,7 +142,6 @@ module Vop
         $logger.debug "eating #{stuff.inspect}"
         if stuff.is_a? Plugin
           @plugins[stuff.name] = stuff
-          $logger.debug "about to init #{stuff.name}"
           stuff.init
         elsif stuff.is_a? Command
           command = stuff
@@ -167,19 +166,11 @@ module Vop
 
       # step 1 : find and load plugins
       (plugins, templates) = PluginFinder.find(self, path)
-
-      $logger.debug "plugins: #{plugins.inspect}"
-      $logger.debug "templates: #{templates.inspect}"
-
       fresh = PluginLoader.read(self, plugins, templates)
 
       # step 2 : activate new plugins (in the right order)
-      $logger.debug "activating #{fresh.loaded.inspect}"
-
-      all_plugins = @plugins.merge(
-        fresh.loaded.map { |plugin| [plugin.name, plugin] }.to_h
-      )
-
+      fresh_loaded = fresh.loaded.map { |plugin| [plugin.name, plugin] }.to_h
+      all_plugins = @plugins.merge(fresh_loaded)
       DependencyResolver.order(self, all_plugins).each do |plugin|
         if fresh.loaded.include? plugin
           eat(plugin)
@@ -215,7 +206,7 @@ module Vop
 
     def load_thyself
       load_from core_path
-      load_from search_path if search_path
+      load_from search_path unless search_path.empty?
 
       new_paths = self.search_gems_for_plugins
       new_paths.each do |new_path|
