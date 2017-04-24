@@ -4,7 +4,7 @@ module Vop
 
     def initialize(op, plugins)
       @op = op
-      @plugins = plugins      
+      @plugins = plugins
     end
 
     def resolve(plugin, resolved, unresolved, level = 0)
