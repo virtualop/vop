@@ -1,7 +1,7 @@
 param! "name"
 
-run do |name|
-  registry = @op.plugins["core"].state[:contributions]
+run do |name, plugin|
+  registry = plugin.state[:contributions]
   if registry.has_key? name
     registry[name]
   end

@@ -87,17 +87,11 @@ module Vop
     def search_path
       result = []
 
-      if core && core.config && core.config[:search_path]
-        result += core.config[:search_path] # core plugin config
+      if core && core.config && core.config["search_path"]
+        result += core.config["search_path"] # core plugin config
       end
 
       result
-    end
-
-    def add_to_search_path(new_path)
-      core.config ||= {}
-      core.config[:search_path] ||= []
-      core.config[:search_path] << new_path
     end
 
     def plugin_config_path
@@ -162,6 +156,7 @@ module Vop
     end
 
     def load_from(path)
+      return if path.empty?
       $logger.debug "loading from #{path.join(" ")}"
 
       # step 1 : find and load plugins
@@ -178,7 +173,7 @@ module Vop
       end
 
       # step 3 : expand entities
-      @plugins['core'].state[:entities].each do |entity|
+      @plugins['commands'].state[:entities].each do |entity|
         entity_name = entity[:name]
         entity_command = @commands[entity_name]
 
@@ -196,7 +191,12 @@ module Vop
             :default_param => true
           }
         end
-        list_command.block = entity_command.param(entity[:key])[:lookup]
+        list_command.block = entity[:list_block]
+
+        # TODO should this be more general?
+        if entity[:options][:columns]
+          list_command.show_options[:columns] = entity[:options][:columns]
+        end
 
         eat(list_command)
 
@@ -206,13 +206,8 @@ module Vop
 
     def load_thyself
       load_from core_path
-      load_from search_path unless search_path.empty?
-
-      new_paths = self.search_gems_for_plugins
-      new_paths.each do |new_path|
-        $logger.info "found new gem plugins, adding #{new_path} to the search path..."
-        self.add_search_path new_path
-      end unless new_paths.nil?
+      load_from search_path
+      load_from self.list_paths.map { |x| x[:path] }
     end
 
     def hook(name, plugin_name)
@@ -247,7 +242,7 @@ module Vop
       if plugins.length > chunk_size
         plugin_string += " + #{plugins.length - chunk_size} more"
       end
-      "vop #{@version} (#{plugin_string})"
+      "vop #{@version}"
     end
 
   end

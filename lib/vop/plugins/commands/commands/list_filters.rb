@@ -7,7 +7,7 @@ param 'plugin', :description => 'list of plugins to filter by',
 
 run do |params|
   @op.filters.select do |name, filter|
-    not params.has_key?('plugin') or params['plugin'].include?(command.plugin.name)
+    not params.has_key?('plugin') or params['plugin'].include?(filter.plugin.name)
   end.map do |name, filter|
     {
       :name => name,

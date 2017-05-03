@@ -104,7 +104,7 @@ RSpec.describe Vop do
     @vop.plugins["foo"].write_config
     @vop.reset
 
-    expect(@vop.plugins["foo"].config[:zaphod]).to eq "beeblebrox"
+    expect(@vop.plugins["foo"].config["zaphod"]).to eq "beeblebrox"
   end
 
 PLUGIN_WITH_INIT_COUNT = <<'EOF'
@@ -127,6 +127,6 @@ EOF
   end
 
   # TODO it actually applies the plugin templates it finds
-  # TODO it does not load plugins twice
+  # TODO it does not load plugins twice if they are on the search path twice
 
 end

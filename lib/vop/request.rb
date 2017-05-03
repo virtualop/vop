@@ -12,7 +12,6 @@ module Vop
 
       @current_filter = nil
       @filter_chain = @op.filter_chain.clone
-      $logger.debug "filter chain: #{@filter_chain}"
     end
 
     def command
@@ -25,6 +24,7 @@ module Vop
 
     # accepts arguments as handed in by :define_method and prepares them
     # into the +params+ structure expected by command blocks
+    # TODO merge with similar looking code in Command
     def prepare
       result = {}
 
@@ -139,7 +139,7 @@ module Vop
       if next_link
         (@result, @context) = next_link.execute_request(request)
       end
-      Response.new(@result, @context)  
+      Response.new(@result, @context)
     end
 
   end

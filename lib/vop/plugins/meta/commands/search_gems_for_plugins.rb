@@ -2,7 +2,7 @@ require "rubygems"
 require "find"
 require "digest"
 
-run do |params|
+contribute to: 'path' do |params|
   candidates = Gem::Specification.select { |spec| /^vop-plugins/ =~ spec.name }
 
   # checksum = Digest::MD5.new
@@ -41,5 +41,7 @@ run do |params|
   search_path = @op.show_search_path
   result.delete_if { |x| search_path.include? x }
 
-  result
+  result.map do |x|
+    { path: x }
+  end
 end

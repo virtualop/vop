@@ -5,7 +5,7 @@ param! "raw_params"
 run do |name, raw_params, params|
   result = []
 
-  registry = @op.plugins["core"].state[:contributions]
+  registry = @op.plugins["contributions"].state[:contributions]
   if registry.has_key? name
     contributors = registry[name]
     contributors.each do |contributor|

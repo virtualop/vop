@@ -25,8 +25,8 @@ COOL_THING = <<EOT
 contribute to: 'thing' do |params|
   [
     {
-      name: "Chucks",
-      color: "#5F021F"
+      "name" => "Chucks",
+      "color" => "#5F021F"
     }
   ]
 end
@@ -55,8 +55,11 @@ EOT
   end
 
   it "is only here for test coverage" do
-    entity = Vop::Entity.new(@vop, "cake", "mascarpone", {foo: "snafoo"})
+    entity = Vop::Entity.new(@vop, "cake", "mascarpone", {foo: 'snafoo', 'string': 'keys'})
     expect(entity.inspect).to_not be_nil
+    # TODO expect(entity["foo"]).to eql "snafoo"
+    expect(entity.foo).to eql "snafoo"
+    expect(entity.string).to eql "keys"
   end
 
   it "allows to define entities" do

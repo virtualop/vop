@@ -23,6 +23,8 @@ run do |params|
   full_name = File.join(plugin_path, plugin_file)
   FileUtils.touch full_name
 
+  # TODO content is [] - should probably be nil, though
+  #puts "content: >>#{params['content']}<<"
   if params['content']
     IO.write(full_name, params['content'])
   end

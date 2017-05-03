@@ -3,10 +3,16 @@ require 'vop/shell/formatter'
 
 class VopShellBackend < Backend
 
+  attr_reader :command_history
+  attr_reader :last_table, :last_result
+
   def initialize(op, options = {})
     @op = op
     @options = options
     @local_context = {}
+    @command_history = []
+    @last_table = nil
+    @last_result = nil
 
     reset_to_command_mode
   end
@@ -60,14 +66,12 @@ class VopShellBackend < Backend
   def complete(word)
     $logger.debug "completing #{word}"
 
-    command_list = @op.commands.keys
-
     list = []
 
     parts = nil
 
     if @command_selected
-      #$logger.debug("asking for lookup values for command '#{@command_selected.name}' and param '#{@current_param[:name]}'")
+      $logger.debug("asking for lookup values for command '#{@command_selected.name}' and param '#{@current_param[:name]}'")
       list = @command_selected.lookup(@current_param[:name], @collected_values)
     else
       begin
@@ -92,7 +96,7 @@ class VopShellBackend < Backend
 
         else
           $logger.debug "no command selected yet, returning command list"
-          list = command_list
+          list = @op.commands.keys
         end
       rescue => e
         $logger.debug "can't parse >>#{word}<< : #{e.message}"
@@ -102,10 +106,9 @@ class VopShellBackend < Backend
 
     the_filter = parts ? parts.last : word
     if the_filter
-      $logger.debug "filtering completion list against : #{the_filter}"
-      $logger.debug "first list item : #{list.first.inspect}"
-      $logger.debug "list: #{list.inspect}"
+      $logger.debug "filtering completion list (#{list.size} items) against : #{the_filter}"
       list.delete_if do |x|
+        x.nil? ||
         x[0...the_filter.size] != the_filter
       end
     end
@@ -230,7 +233,6 @@ class VopShellBackend < Backend
 
   def execute_command
     command = @command_selected
-    $logger.debug "vop_shell_backend executing command '#{command.short_name}'"
 
     begin
       extras = {
@@ -254,10 +256,28 @@ class VopShellBackend < Backend
         @local_context.merge! context
       end
 
-      format_output(command, result)
+      # @command_history << {
+      #   command: request.command.name,
+      #   params: request,
+      #   response: response
+      # } # (WiP)
+      (display_type, result) = format_output(command, result)
+
+      # remember the last displayed result for later "raw" output
+      @last_result = result
+
+      # remember the last shown table for "detail"ed output
+      if display_type == :table
+        $logger.debug "storing last table result : #{result.pretty_inspect}"
+        @last_table = result
+      end
     ensure
       reset_to_command_mode
     end
+  end
+
+  def inspect
+    "<VopShellBackend>"
   end
 
 end

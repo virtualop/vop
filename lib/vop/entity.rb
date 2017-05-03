@@ -27,7 +27,6 @@ module Vop
 
     def make_methods_for_hash_keys
       @data.keys.each do |key|
-        #next if ['name', 'key'].include? key.to_s
         next if ['key'].include? key.to_s
         self.class.send(:define_method, key) do |*args|
           ruby_args = args.length > 0 ? args[0] : {}

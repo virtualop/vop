@@ -35,7 +35,7 @@ module Vop
         begin
           self.instance_eval(source[:code], source[:file_name])
         rescue => detail
-          raise "problem loading commannd #{name} : #{detail.message}\n#{detail.backtrace.join("\n")}"
+          raise "problem loading command #{name} : #{detail.message}\n#{detail.backtrace.join("\n")}"
         end
       end
 

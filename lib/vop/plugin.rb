@@ -17,6 +17,7 @@ module Vop
 
     attr_reader :state
     attr_reader :loaded
+    attr_reader :sources
 
     def initialize(op, plugin_name, plugin_path, options = {})
       @op = op
@@ -29,14 +30,18 @@ module Vop
 
       @loaded = false
 
-      @config = nil
+      @config = {}
       @dependencies = []
 
       @config_file_name = File.join(op.plugin_config_path, plugin_name + ".json")
 
-      # all plugins depend on "core" (unless they are core or some murky dummy called __root__)
+      # all plugins depend on "core" unless they are core or some murky dummy called __root__
       independents = %w|core __root__|
+      # (same goes for core modules)
+      core_modules = %w|contributions commands|
+      independents += core_modules
       @dependencies << "core" unless independents.include? plugin_name
+      @dependencies += core_modules unless core_modules.include? plugin_name
 
       @state = {}
       @hooks = {}
@@ -66,7 +71,7 @@ module Vop
       load_helpers
       load_config
 
-      if @options[:autoload] || @config
+      if @options[:autoload] || (@config.values.size > 0)
         # TODO we might want to activate/register only plugins with enough config
         call_hook :init
         load_commands
@@ -130,13 +135,21 @@ module Vop
       end
 
       plugins_to_load_helpers_from.each do |other_plugin|
-        next if other_plugin.helper_sources(type_name).size == 0
-        #$logger.debug "loading helper from #{other_plugin.name} into #{target} : #{other_plugin.helper_sources.size}"
+        helper_sources = other_plugin.sources[type_name]
+
+        next if helper_sources.size == 0
 
         helper_module = Module.new()
-        other_plugin.helper_sources(type_name).each do |source|
-          helper_module.class_eval source
+
+        helper_sources.each do |name, helper|
+          begin
+            helper_module.class_eval helper[:code]
+          rescue Exception => e
+            $stderr.puts("could not read helper #{name} : #{e.message}")
+            raise e
+          end
         end
+
         target.extend helper_module
       end
     end
@@ -165,7 +178,7 @@ module Vop
         raw = nil
         begin
           raw = IO.read(@config_file_name)
-          @config = JSON.parse(raw).deep_symbolize_keys
+          @config = JSON.parse(raw)
         rescue => e
           $logger.error "could not read JSON config from #{@config_file_name} (#{e.message}), ignoring:\n#{raw}"
         end

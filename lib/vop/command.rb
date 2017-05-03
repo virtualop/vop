@@ -157,9 +157,9 @@ module Vop
         end
 
         # from the black magick department: block parameters with the
-        # same name as an entity get auto-inflated
+        # same name as an entity are auto-inflated
         if param
-          entity_names = @plugin.op.core.state[:entities].map { |entity| entity[:name] }
+          entity_names = @plugin.op.plugins['commands'].state[:entities].map { |entity| entity[:name] }
           if entity_names.include? name.to_s
             $logger.debug "auto-inflating #{name.to_s}"
             resolved = @plugin.op.send(name, param)

@@ -21,20 +21,23 @@ RSpec.describe "plugin finder" do
 
     result, _templates = @finder.scan(@core_plugin_path)
     expect(result).to_not be_nil
-    expect(result.sort).to eq(expected.sort)
+    pp result
+    expected.each do |one|
+      expect(result.sort).to include(one)
+    end
   end
 
   it "finds plugins in multiple dirs" do
     @vop.new_plugin("path" => SpecHelper::TEST_SRC_PATH, "name" => "just_testing")
     result, _templates = @finder.scan([@core_plugin_path, SpecHelper::TEST_SRC_PATH])
     expect(result).to_not be_nil
-    expect(result.size).to be > 3
+    expect(result.size).to be > 5
   end
 
   it "does not die when trying to read from a non-existing dir" do
     result, _templates = @finder.scan(["/path/that/will/hopefully/not/exist/anywhere", @core_plugin_path])
     expect(result).to_not be_nil
-    expect(result.size).to eq 3
+    expect(result.size).to eq 5
   end
 
   it "can inspect plugins" do
