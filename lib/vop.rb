@@ -207,7 +207,7 @@ module Vop
     def load_thyself
       load_from core_path
       load_from search_path
-      load_from self.list_paths.map { |x| x[:path] }
+      load_from plugin_search_path
     end
 
     def hook(name, plugin_name)

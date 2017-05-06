@@ -1,5 +1,4 @@
 require 'vop/entity'
-require 'pp'
 
 def define_entity(name, key, options, list_block)
   @op.plugins['commands'].state[:entities] << {
