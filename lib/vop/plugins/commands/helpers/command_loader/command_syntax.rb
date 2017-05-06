@@ -33,7 +33,7 @@ def param(name, options = {})
   # auto-detect boolean parameters
   if options.has_key? :default
     if options[:default] == true || options[:default] == false
-      options[:boolean] = true      
+      options[:boolean] = true
     end
   end
 
