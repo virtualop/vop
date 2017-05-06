@@ -1,7 +1,7 @@
-require 'vop/entity'
+require "vop/entity"
 
 def define_entity(name, key, options, list_block)
-  @op.plugins['commands'].state[:entities] << {
+  @op.plugins["commands"].state[:entities] << {
     name: name,
     key: key,
     options: options,
@@ -9,13 +9,13 @@ def define_entity(name, key, options, list_block)
   }
 end
 
-def entity(key = 'name', options = {}, &block)
+def entity(key = "name", options = {}, &block)
   command_name = @command.short_name
 
   # if an entity doesn't define a block, by default
   # it just passes through all contributions
   list_block = block || lambda do |params|
-    @op.collect_contributions('name' => command_name, 'raw_params' => params)
+    @op.collect_contributions("name" => command_name, "raw_params" => params)
   end
 
   # register the entity with the vop
@@ -44,7 +44,7 @@ def entity(key = 'name', options = {}, &block)
   param! key, lookup: lookup
 
   # when an entity is stacked on another entity, the "parent" entity needs to
-  # be specified as param to identify a "child" entity (think services on machines)
+  # be specified as param to identify a "child" entity
   if options[:on]
     param! options[:on].to_sym
   end

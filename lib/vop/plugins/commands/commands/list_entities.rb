@@ -1,3 +1,3 @@
-run do
-  @plugin.state[:entities].map { |x| x[:name] }
+run do |plugin|
+  plugin.state[:entities].map { |x| x[:name] }
 end

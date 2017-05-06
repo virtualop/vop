@@ -155,6 +155,12 @@ module Vop
       end
     end
 
+    def load_thyself
+      load_from core_path
+      load_from search_path
+      load_from plugin_search_path
+    end
+
     def load_from(path)
       return if path.empty?
       $logger.debug "loading from #{path.join(" ")}"
@@ -173,7 +179,7 @@ module Vop
       end
 
       # step 3 : expand entities
-      @plugins['commands'].state[:entities].each do |entity|
+      @plugins["commands"].state[:entities].each do |entity|
         entity_name = entity[:name]
         entity_command = @commands[entity_name]
 
@@ -202,12 +208,6 @@ module Vop
 
         # TODO add pseudo source code so that `source <list_command_name>` works
       end
-    end
-
-    def load_thyself
-      load_from core_path
-      load_from search_path
-      load_from plugin_search_path
     end
 
     def hook(name, plugin_name)

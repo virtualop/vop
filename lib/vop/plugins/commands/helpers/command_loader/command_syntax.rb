@@ -20,7 +20,7 @@ def param(name, options = {})
   if name.is_a? Symbol
     op = @plugin.op
 
-    entity_names = op.plugins['commands'].state[:entities].map { |entity| entity[:name] }
+    entity_names = op.plugins["commands"].state[:entities].map { |entity| entity[:name] }
     if entity_names.include? name.to_s
       list_command_name = "list_#{name.to_s.pluralize(42)}"
       p[:lookup] = lambda do |params|
