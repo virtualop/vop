@@ -8,6 +8,8 @@ RSpec.describe Vop do
   include SpecHelper
   before(:example) do
     prepare
+
+    @test_commands = @vop.new_plugin("path" => SpecHelper::TEST_SRC_PATH, "name" => "test_commands", "content" => PLUGIN_WITH_INIT_COUNT)
   end
 
   it "has diagnostics" do
@@ -124,6 +126,67 @@ EOF
     init_count = @vop.new_command("plugin" => "init_count", "name" => "show_init_count", "content" => INIT_COUNT_ACCESS_COMMAND)
     expect(@vop.list_commands.map { |x| x[:name]} ).to include "show_init_count"
     expect(@vop.show_init_count).to be 1
+  end
+
+AUTOBOX_COMMAND = <<'EOC'
+param "foo", multi: true
+
+run do |foo|
+  foo.to_json()
+end
+EOC
+
+  it "auto-boxes params that accept multiple values" do
+    @vop.new_command("plugin" => "test_commands", "name" => "autobox", "content" => AUTOBOX_COMMAND)
+    json = @vop.autobox("foo" => "zaphod")
+    data = JSON.parse(json)
+    expect(data).to eql ["zaphod"]
+  end
+
+AUTOUNBOX_COMMAND = <<'EOC'
+param "foo", multi: false
+
+run do |foo|
+  foo
+end
+
+EOC
+
+  it "auto-unboxes params" do
+    @vop.new_command("plugin" => "test_commands", "name" => "autounbox", "content" => AUTOUNBOX_COMMAND)
+    data = @vop.autounbox("foo" => ["zaphod"])
+    expect(data).to eql "zaphod"
+
+  end
+
+  it "auto-boxes default params" do
+    @vop.new_command("plugin" => "test_commands", "name" => "autobox", "content" => AUTOBOX_COMMAND)
+    json = @vop.autobox("zaphod")
+    data = JSON.parse(json)
+    expect(data).to eql ["zaphod"]
+  end
+
+BOOLEAN_COMMAND = <<'EOC'
+param "really", default: false
+
+run do |really|
+  really ? 42 : 0
+end
+EOC
+
+  it "converts booleans from string" do
+    @vop.new_command("plugin" => "test_commands", "name" => "do_it", "content" => BOOLEAN_COMMAND)
+    expect(@vop.do_it).to eql 0
+    expect(@vop.do_it("really" => true)).to eql 42
+    expect(@vop.do_it("really" => "true")).to eql 42
+    expect(@vop.do_it(true)).to eql 42
+    expect(@vop.do_it("Yes")).to eql 42
+    expect(@vop.do_it("on")).to eql 42
+
+    expect(@vop.do_it("no")).to eql 0
+    expect(@vop.do_it("off")).to eql 0
+    expect(@vop.do_it("false")).to eql 0
+    expect(@vop.do_it(false)).to eql 0
   end
 
   # TODO it actually applies the plugin templates it finds

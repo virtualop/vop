@@ -10,14 +10,14 @@ require 'pp'
 
 begin
   shell = Vop::Shell::setup()
-  if shell.options["--execute"]
-    last_response = shell.execute(shell.options["--execute"])
+  last_response = if shell.options["--execute"]
+    shell.execute(shell.options["--execute"])
   else
-    last_response = shell.run_cli
+    shell.run_cli
   end
 
-  # TODO exit_status = last_response && last_response.status == Vop.Status::OK ? 0 : 1
-  exit 0
+  exit_status = last_response && last_response.status == "ok" ? 0 : 1
+  exit exit_status
 rescue => detail
   if detail.is_a? Docopt::Exit
     puts detail.message

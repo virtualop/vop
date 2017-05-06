@@ -1,7 +1,5 @@
 require "erb"
 require_relative "loaders/command_loader"
-require_relative "helpers/symbolize_helper"
-using SymbolizeHelper
 
 module Vop
   class Plugin

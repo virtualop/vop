@@ -74,37 +74,40 @@ module Vop
       if ruby_args
         if ruby_args.is_a? Hash
           result = ruby_args
-          ruby_args.each do |k,v|
-            p = param(k)
-            if p
-              # values are auto-boxed into an array if the param expects multiple values
-              if p[:multi] && ! v.is_a?(Array) then
-                $logger.debug("autoboxing for #{p[:name]}")
-                v = [ v ]
-              # array values are auto-unboxed if the param doesn't want multi
-              elsif ! p[:multi] && v.is_a?(Array) && v.length == 1
-                $logger.debug("autounboxing for #{p[:name]}")
-                v = v.first
-              end
-
-              # convert booleans
-              if p[:boolean]
-                unless [true, false].include? v
-                  $logger.info("converting #{p[:name]} into boolean")
-                  v = /[tT]rue|[yY]es|[oO]n/ =~ v
-                end
-              end
-            end
-            result[k] = v
-          end
         else
           # if there's a default param, it can be passed to execute as "scalar"
           # param, but it will be converted into a "normal" named param
           dp = default_param
-          result = {
-            dp[:name] => ruby_args
-          } if dp
+          if dp
+            result = {
+              dp[:name] => ruby_args
+            }
+          end
         end
+      end
+
+      result.each do |k,v|
+        p = param(k)
+        if p
+          # values are auto-boxed into an array if the param expects multiple values
+          if p[:multi] && ! v.is_a?(Array) then
+            $logger.debug("autoboxing for #{p[:name]}")
+            v = [ v ]
+          # array values are auto-unboxed if the param doesn't want multi
+          elsif ! p[:multi] && v.is_a?(Array) && v.length == 1
+            $logger.debug("autounboxing for #{p[:name]}")
+            v = v.first
+          end
+
+          # convert booleans
+          if p[:boolean]
+            unless [true, false].include? v
+              $logger.info("converting #{p[:name]} (#{v}) into boolean")
+              v = /[tT]rue|[yY]es|[oO]n/ =~ v
+            end          
+          end
+        end
+        result[k] = v
       end
 
       if extra.keys.size > 0

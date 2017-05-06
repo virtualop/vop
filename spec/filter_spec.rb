@@ -43,8 +43,7 @@ EOT
 
   it "can get a cache key from a command" do
     request = Vop::Request.new(@vop, "identity", {"foo" => "bar"})
-    prepared = request.prepare
-    expect(prepared).to_not be_nil
+    expect(request).to_not be_nil
     ["foo", "bar", "identity", "v1"].each do |thing|
       expect(request.cache_key).to include thing
     end

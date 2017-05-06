@@ -167,6 +167,7 @@ class VopShellBackend < Backend
 
   def process_input(command_line)
     $logger.debug "+++ process_input #{command_line} +++"
+
     if @command_selected
       # we're in parameter processing mode - so check which parameter
       # we've got now and switch modes if necessary
@@ -234,6 +235,7 @@ class VopShellBackend < Backend
   def execute_command
     command = @command_selected
 
+    response = nil
     begin
       extras = {
         # TODO needed for e.g. select_machine and show_context, but clutters up the stacks
@@ -274,6 +276,8 @@ class VopShellBackend < Backend
     ensure
       reset_to_command_mode
     end
+
+    response
   end
 
   def inspect

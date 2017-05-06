@@ -55,6 +55,8 @@ def entity(key = 'name', options = {}, &block)
   @command.block = lambda do |params|
     list = list_block.call(params)
 
+    $logger.debug "list block params : #{params.pretty_inspect}"
+    $logger.debug "searching entity by #{key} '#{params[key]}'"
     found = list.select { |x| x[key] == params[key] }
     unless found && found.size > 0
       raise "no such entity : #{params[key]} [#{command_name}]"

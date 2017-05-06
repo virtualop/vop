@@ -3,7 +3,20 @@ param "except", :multi => true
 param! "raw_params"
 
 run do |name, raw_params, params|
-  result = []
+  target = @op.commands[params["name"].split(".").last]
+  $logger.debug "target : #{target.pretty_inspect}"
+
+  display_type = target.show_options[:display_type] || :table
+
+  result = case display_type
+  when :table
+    []
+  when :hash
+    {}
+  else
+    raise "contributions not implemented for display_type #{display_type}"
+  end
+  $logger.debug "initialized result : #{result.pretty_inspect}"
 
   registry = @op.plugins["contributions"].state[:contributions]
   if registry.has_key? name
@@ -22,7 +35,15 @@ run do |name, raw_params, params|
       else
         $logger.debug "raw params: " + raw_params.inspect
         short_name = contributor.to_s.split(".").last
-        result += @op.send(short_name.to_sym, raw_params)
+
+        contribution = @op.send(short_name.to_sym, raw_params)
+        case display_type
+        when :table
+          result += contribution
+        when :hash
+          result.merge! contribution
+        end
+        $logger.debug "new result : #{result.pretty_inspect}"
       end
     end
   end
