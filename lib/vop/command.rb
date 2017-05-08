@@ -102,7 +102,7 @@ module Vop
           # convert booleans
           if p[:boolean]
             unless [true, false].include? v
-              $logger.info("converting #{p[:name]} (#{v}) into boolean")
+              $logger.debug("converting #{p[:name]} (#{v}) into boolean")
               v = /[tT]rue|[yY]es|[oO]n/ =~ v
             end
           end

@@ -1,7 +1,7 @@
-require 'spec_helper'
-require 'vop'
-require 'pp'
-require 'fileutils'
+require "spec_helper"
+require "vop"
+require "pp"
+require "fileutils"
 
 RSpec.describe Vop do
 
@@ -35,11 +35,11 @@ RSpec.describe Vop do
   end
 
   it "accepts named params" do
-    expect(@vop.source('name' => 'source')).to_not be_nil
+    expect(@vop.source("name" => "source")).to_not be_nil
   end
 
   it "accepts default params" do
-    expect(@vop.source('source')).to_not be_nil
+    expect(@vop.source("source")).to_not be_nil
   end
 
   it "complains about missing mandatory params" do
@@ -65,13 +65,13 @@ RSpec.describe Vop do
 
   it "should allow to create and remove plugins" do
     old_plugin_list = @vop.list_plugins
-    new_plugin = @vop.new_plugin('path' => SpecHelper::TEST_SRC_PATH, 'name' => 'rspec_test')
+    new_plugin = @vop.new_plugin("path" => SpecHelper::TEST_SRC_PATH, "name" => "rspec_test")
     expect(new_plugin).to_not be_nil
     new_plugin_list = @vop.list_plugins
     expect(new_plugin_list.length).to be > old_plugin_list.length
 
     old_plugin_list = new_plugin_list
-    result = @vop.delete_plugin('name' => 'rspec_test')
+    result = @vop.delete_plugin("name" => "rspec_test")
     expect(result).to_not be_nil
     new_plugin_list = @vop.list_plugins
     expect(new_plugin_list.length).to be < old_plugin_list.length
@@ -97,7 +97,7 @@ RSpec.describe Vop do
     expect(plugin_names).to include("foo")
   end
 
-  it "lets you access plugin config through symbols" do
+  it "loads config for plugins and saves changes" do
     foo = @vop.new_plugin("path" => SpecHelper::TEST_SRC_PATH, "name" => "foo", "content" => "")
     plugins = @vop.list_plugins
     expect(plugins.map { |x| x[:name] }).to include("foo")
@@ -107,25 +107,6 @@ RSpec.describe Vop do
     @vop.reset
 
     expect(@vop.plugins["foo"].config["zaphod"]).to eq "beeblebrox"
-  end
-
-PLUGIN_WITH_INIT_COUNT = <<'EOF'
-on :init do |plugin|
-  plugin.state[:init_count] = (plugin.state[:init_count] || 0) + 1
-end
-EOF
-
-INIT_COUNT_ACCESS_COMMAND = <<'EOF'
-run do |plugin|
-  plugin.state[:init_count]
-end
-EOF
-
-  it "calls init only once" do
-    special = @vop.new_plugin("path" => SpecHelper::TEST_SRC_PATH, "name" => "init_count", "content" => PLUGIN_WITH_INIT_COUNT)
-    init_count = @vop.new_command("plugin" => "init_count", "name" => "show_init_count", "content" => INIT_COUNT_ACCESS_COMMAND)
-    expect(@vop.list_commands.map { |x| x[:name]} ).to include "show_init_count"
-    expect(@vop.show_init_count).to be 1
   end
 
 AUTOBOX_COMMAND = <<'EOC'

@@ -40,9 +40,7 @@ module Vop
       @plugin.options[:autoload] = value
     end
 
-    def self.read(vop, plugins, templates)
-      loader = new(vop)
-
+    def load(plugins, templates)
       plugins.each do |plugin_path|
         name = File.basename(plugin_path)
 
@@ -58,19 +56,26 @@ module Vop
         next unless File.exists?(plugin_file)
         $logger.debug "reading plugin '#{name}' from '#{plugin_file}'"
 
-        plugin = loader.new_plugin(name, plugin_path)
+        plugin = new_plugin(name, plugin_path)
 
         code = File.read(plugin_file)
         begin
-          loader.instance_eval(code, plugin_file)
+          instance_eval(code, plugin_file)
         rescue => detail
-          raise "problem loading plugin #{name} : #{detail.message}\n#{detail.backtrace.join("\n")}"
+          $logger.warn "problem loading plugin #{name} : #{detail.message}\n#{detail.backtrace.join("\n")}"
+          raise detail
         end
 
-        loader.loaded << plugin
+        @loaded << plugin
 
         $logger.debug "loaded plugin #{name}"
       end
+    end
+
+    def self.read(vop, plugins, templates)
+      loader = new(vop)
+
+      loader.load(plugins, templates)
 
       loader
     end

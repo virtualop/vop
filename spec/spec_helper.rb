@@ -1,8 +1,8 @@
-require 'simplecov'
+require "simplecov"
 SimpleCov.start
 
-require 'fileutils'
-require 'vop'
+require "fileutils"
+require "vop"
 
 module SpecHelper
 

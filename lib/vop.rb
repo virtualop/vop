@@ -1,16 +1,16 @@
-require 'active_support/inflector'
-require 'json'
-require 'logger'
-require 'pathname'
-require 'pp'
-require 'yaml'
+require "active_support/inflector"
+require "json"
+require "logger"
+require "pathname"
+require "pp"
+require "yaml"
 
-require_relative 'vop/helpers/dependency_resolver'
-require_relative 'vop/helpers/plugin_finder'
-require_relative 'vop/loaders/plugin_loader'
-require_relative 'vop/loaders/filter_loader'
-require_relative 'vop/request'
-require_relative 'vop/version'
+require_relative "vop/helpers/dependency_resolver"
+require_relative "vop/helpers/plugin_finder"
+require_relative "vop/loaders/plugin_loader"
+require_relative "vop/loaders/filter_loader"
+require_relative "vop/request"
+require_relative "vop/version"
 
 module Vop
 
@@ -47,7 +47,7 @@ module Vop
       end
 
       $logger = Logger.new(STDOUT)
-      $logger.level = options['--verbose'] || options[:verbose] ? Logger::DEBUG : Logger::INFO
+      $logger.level = options["--verbose"] || options[:verbose] ? Logger::DEBUG : Logger::INFO
 
       $logger.debug "config : #{@config.inspect}"
 
@@ -107,17 +107,17 @@ module Vop
     end
 
     def core
-      @plugins['core']
+      @plugins["core"]
     end
 
     def load_system_config
       if File.exists? @config_path
-        main_config_root = File.join(@config_path, 'vop.')
+        main_config_root = File.join(@config_path, "vop.")
 
-        result = if File.exists? main_config_root + 'yml'
-          YAML.load_file(main_config_root + 'yml')
-        elsif File.exists? main_config_root + 'json'
-          JSON.parse(IO.read(main_config_root + 'json'))
+        result = if File.exists? main_config_root + "yml"
+          YAML.load_file(main_config_root + "yml")
+        elsif File.exists? main_config_root + "json"
+          JSON.parse(IO.read(main_config_root + "json"))
         else
           {}
         end
@@ -238,7 +238,7 @@ module Vop
     def inspect
       chunk_size = 25
       plugins = @plugins || {}
-      plugin_string = plugins.keys.sort[0..chunk_size-1].join(' ')
+      plugin_string = plugins.keys.sort[0..chunk_size-1].join(" ")
       if plugins.length > chunk_size
         plugin_string += " + #{plugins.length - chunk_size} more"
       end

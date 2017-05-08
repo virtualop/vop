@@ -9,7 +9,7 @@ RSpec.describe "plugin finder" do
 
     vop_root = Pathname.new(File.join(File.dirname(__FILE__), "..")).realpath
     @core_plugin_path = File.join(vop_root, "lib", "vop", "plugins")
-    @finder =Vop::PluginFinder.new(@vop)
+    @finder = Vop::PluginFinder.new(@vop)
   end
 
   it "has a finder" do
