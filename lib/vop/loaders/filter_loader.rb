@@ -29,7 +29,8 @@ module Vop
         begin
           self.instance_eval(source[:code], source[:file_name])
         rescue => detail
-          raise "problem loading filter #{name} : #{detail.message}\n#{detail.backtrace.join("\n")}"
+          $logger.warn "problem loading filter #{name} : #{detail.message}\n#{detail.backtrace.join("\n")}"
+          raise detail
         end
       end
 

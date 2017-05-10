@@ -9,13 +9,12 @@ RSpec.describe Vop::Filter do
   include SpecHelper
   before(:example) do
     prepare
-    @plugin_name = "funny_filters"
-    @vop.new_plugin("path" => SpecHelper::TEST_SRC_PATH, "name" => @plugin_name)
+    @vop.new_plugin("path" => SpecHelper::TEST_SRC_PATH, "name" => "funny_filters")
   end
 
   it "filters requests" do
     name = "passthrough_filter"
-    @vop.new_filter("plugin" => @plugin_name, "name" => name)
+    @vop.new_filter("plugin" => "funny_filters", "name" => name)
     request = ::Vop::Request.new(@vop, "identity", {}, {})
     response = request.execute()
     expect(response.result).to eq "localhost"
@@ -37,7 +36,7 @@ EOT
 
   it "allows filters to change the result" do
     name = "blocking_filter"
-    @vop.new_filter("plugin" => @plugin_name, "name" => name, "content" => SLARTIBART)
+    @vop.new_filter("plugin" => "funny_filters", "name" => name, "content" => SLARTIBART)
     expect(@vop.identity).to eq "slartibartfast"
   end
 
@@ -47,6 +46,15 @@ EOT
     ["foo", "bar", "identity", "v1"].each do |thing|
       expect(request.cache_key).to include thing
     end
+  end
+
+KAPUTT = <<'EOC'
+eh?
+EOC
+
+  it "handles invalid filters" do
+    @vop.new_filter("plugin" => "funny_filters", "name" => "broken", "content" => KAPUTT)
+    expect { @vop.reset("fail_hard" => true) }.to raise_error ::Vop::SyntaxError, /undefined.+method.+eh\?/
   end
 
 end

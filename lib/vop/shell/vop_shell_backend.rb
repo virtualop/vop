@@ -190,6 +190,7 @@ class VopShellBackend < Backend
     else
       (unused, @command_selected, values) = parse_command_string(command_line, @local_context)
 
+      result = nil
       if @command_selected
         values.each do |key, value_list|
           begin
@@ -216,8 +217,11 @@ class VopShellBackend < Backend
         end
 
 
-        execute_command_if_possible
+        result = execute_command_if_possible
+      else
+        $logger.error "no command found for '#{command_line}', sorry"
       end
+      result
     end
   end
 

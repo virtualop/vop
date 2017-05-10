@@ -19,6 +19,7 @@ Options:
   -h --help       show this help screen
   -v --verbose    enable debug output
   -e --execute=<command>  to run a command directly
+  -V --version    output release version
 
 DOCOPT
 

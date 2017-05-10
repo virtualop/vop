@@ -12,6 +12,8 @@ begin
   shell = Vop::Shell::setup()
   last_response = if shell.options["--execute"]
     shell.execute(shell.options["--execute"])
+  elsif shell.options["--version"]
+    shell.execute("version")
   else
     shell.run_cli
   end

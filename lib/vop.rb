@@ -6,6 +6,7 @@ require "pp"
 require "yaml"
 
 require_relative "vop/helpers/dependency_resolver"
+require_relative "vop/helpers/errors"
 require_relative "vop/helpers/plugin_finder"
 require_relative "vop/loaders/plugin_loader"
 require_relative "vop/loaders/filter_loader"
@@ -16,6 +17,8 @@ module Vop
 
   VOP_ROOT = Pathname.new(File.join(File.dirname(__FILE__), "..")).realpath
   CORE_PLUGIN_PATH = File.join(VOP_ROOT, "lib", "vop", "plugins")
+
+  include Vop::Errors
 
   class Vop
 
@@ -100,7 +103,7 @@ module Vop
 
     def command(name)
       unless @commands.has_key?(name)
-        raise "no such command : #{name}"
+        raise ::Vop::NoSuchCommand, "no such command : #{name}"
       end
 
       @commands[name]

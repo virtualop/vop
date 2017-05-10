@@ -6,8 +6,11 @@ require "vop"
 
 module SpecHelper
 
-  TEST_SRC_PATH = "/tmp/vop_rspec_test"
-  TEST_CONFIG = "/tmp/vop_rspec_test_config"
+  TEST_TMP_PATH = "/tmp/vop_rspec"
+  TEST_SRC_PATH     = "#{TEST_TMP_PATH}/src"
+  TEST_SRC_PATH_ALT = "#{TEST_TMP_PATH}/src2"
+
+  TEST_CONFIG = "#{TEST_TMP_PATH}/config"
 
   def empty_dir(path)
     if File.exists? path
@@ -17,8 +20,10 @@ module SpecHelper
   end
 
   def prepare
-    empty_dir(TEST_CONFIG)
-    empty_dir(TEST_SRC_PATH)
+    empty_dir(TEST_TMP_PATH)
+    [ TEST_SRC_PATH, TEST_SRC_PATH_ALT, TEST_CONFIG ].each do |path|
+      FileUtils.mkdir_p path
+    end
 
     @vop = Vop::Vop.new(
       search_path: [ TEST_SRC_PATH ],

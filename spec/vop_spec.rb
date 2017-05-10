@@ -9,7 +9,7 @@ RSpec.describe Vop do
   before(:example) do
     prepare
 
-    @test_commands = @vop.new_plugin("path" => SpecHelper::TEST_SRC_PATH, "name" => "test_commands", "content" => PLUGIN_WITH_INIT_COUNT)
+    @vop.new_plugin("path" => SpecHelper::TEST_SRC_PATH, "name" => "vop_spec")
   end
 
   it "has diagnostics" do
@@ -27,43 +27,21 @@ RSpec.describe Vop do
   end
 
   it "only hands out existing commands" do
-    expect { @vop.command("transmogrify") }.to raise_error
+    expect { @vop.command("transmogrify") }.to raise_error(Vop::NoSuchCommand)
   end
 
   it "reads config" do
     expect(@vop.identity).to_not be_nil
   end
 
-  it "accepts named params" do
-    expect(@vop.source("name" => "source")).to_not be_nil
-  end
-
-  it "accepts default params" do
-    expect(@vop.source("source")).to_not be_nil
-  end
-
-  it "complains about missing mandatory params" do
-    expect { @vop.source() }.to raise_error(RuntimeError)
-  end
-
-  it "shows mandatory params" do
-    source_cmd = @vop.commands["source"]
-    expect(source_cmd.mandatory_params.size).to be == 1
-  end
-
-  it "returns lookups" do
-    source_cmd = @vop.commands["source"]
-    expect(source_cmd.lookup("name", {}).size).to be > 0
-  end
-
   it "allows to extend the search path" do
     new_path = File.join(SpecHelper::TEST_SRC_PATH, "foo")
     @vop.add_search_path(new_path)
-    puts "+++ extended search path : #{@vop.show_search_path} +++"
+    $logger.info "+++ extended search path : #{@vop.show_search_path} +++"
     expect(@vop.show_search_path).to include(new_path)
   end
 
-  it "should allow to create and remove plugins" do
+  it "can create plugins and remove them again" do
     old_plugin_list = @vop.list_plugins
     new_plugin = @vop.new_plugin("path" => SpecHelper::TEST_SRC_PATH, "name" => "rspec_test")
     expect(new_plugin).to_not be_nil
@@ -109,65 +87,33 @@ RSpec.describe Vop do
     expect(@vop.plugins["foo"].config["zaphod"]).to eq "beeblebrox"
   end
 
-AUTOBOX_COMMAND = <<'EOC'
-param "foo", multi: true
+  it "handles circular dependencies between plugins" do
+    plugins = @vop.plugins
 
-run do |foo|
-  foo.to_json()
-end
-EOC
+    foo = ::Vop::Plugin.new(@vop, "foo", File.join(SpecHelper::TEST_SRC_PATH, "foo"))
+    bar = ::Vop::Plugin.new(@vop, "bar", File.join(SpecHelper::TEST_SRC_PATH, "bar"))
 
-  it "auto-boxes params that accept multiple values" do
-    @vop.new_command("plugin" => "test_commands", "name" => "autobox", "content" => AUTOBOX_COMMAND)
-    json = @vop.autobox("foo" => "zaphod")
-    data = JSON.parse(json)
-    expect(data).to eql ["zaphod"]
+    foo.dependencies << "bar"
+    bar.dependencies << "foo"
+
+    plugins["foo"] = foo
+    plugins["bar"] = bar
+
+    expect {
+      ::Vop::DependencyResolver.order(@vop, plugins)
+    }.to raise_error ::Vop::RunningInCircles, /bar -> foo/
   end
 
-AUTOUNBOX_COMMAND = <<'EOC'
-param "foo", multi: false
+  it "complains about missing dependencies" do
+    plugins = @vop.plugins
 
-run do |foo|
-  foo
-end
+    plugins["foo"] = ::Vop::Plugin.new(@vop, "foo", File.join(SpecHelper::TEST_SRC_PATH, "foo"))
+    plugins["foo"].dependencies << "peace on earth"
 
-EOC
+    expect {
+      ::Vop::DependencyResolver.order(@vop, plugins)
+    }.to raise_error ::Vop::MissingPlugin, /peace on earth/
 
-  it "auto-unboxes params" do
-    @vop.new_command("plugin" => "test_commands", "name" => "autounbox", "content" => AUTOUNBOX_COMMAND)
-    data = @vop.autounbox("foo" => ["zaphod"])
-    expect(data).to eql "zaphod"
-
-  end
-
-  it "auto-boxes default params" do
-    @vop.new_command("plugin" => "test_commands", "name" => "autobox", "content" => AUTOBOX_COMMAND)
-    json = @vop.autobox("zaphod")
-    data = JSON.parse(json)
-    expect(data).to eql ["zaphod"]
-  end
-
-BOOLEAN_COMMAND = <<'EOC'
-param "really", default: false
-
-run do |really|
-  really ? 42 : 0
-end
-EOC
-
-  it "converts booleans from string" do
-    @vop.new_command("plugin" => "test_commands", "name" => "do_it", "content" => BOOLEAN_COMMAND)
-    expect(@vop.do_it).to eql 0
-    expect(@vop.do_it("really" => true)).to eql 42
-    expect(@vop.do_it("really" => "true")).to eql 42
-    expect(@vop.do_it(true)).to eql 42
-    expect(@vop.do_it("Yes")).to eql 42
-    expect(@vop.do_it("on")).to eql 42
-
-    expect(@vop.do_it("no")).to eql 0
-    expect(@vop.do_it("off")).to eql 0
-    expect(@vop.do_it("false")).to eql 0
-    expect(@vop.do_it(false)).to eql 0
   end
 
   # TODO it actually applies the plugin templates it finds

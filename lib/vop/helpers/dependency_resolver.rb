@@ -13,10 +13,10 @@ module Vop
       plugin.dependencies.each do |dep|
         unless resolved.include? dep
           if unresolved.include? dep
-            raise "running in circles #{plugin.name} -> #{dep}"
+            raise ::Vop::RunningInCircles, "circular dependency #{plugin.name} -> #{dep}"
           else
             unless @plugins.has_key? dep
-              raise "missing dependency: #{plugin.name} depends on #{dep}"
+              raise ::Vop::MissingPlugin, "dependency not met: #{plugin.name} depends on #{dep}"
             end
             dependency = @plugins[dep]
             resolve(dependency, resolved, unresolved, level + 1)
@@ -30,7 +30,7 @@ module Vop
       resolved = []
       unresolved = []
 
-      root_plugin = Plugin.new(@op, '__root__', nil)
+      root_plugin = Plugin.new(@op, "__root__", nil)
       @plugins.values.each do |plugin|
         root_plugin.dependencies << plugin.name
       end

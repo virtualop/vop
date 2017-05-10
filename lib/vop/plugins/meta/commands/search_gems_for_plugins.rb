@@ -42,6 +42,6 @@ contribute to: 'path' do |params|
   result.delete_if { |x| search_path.include? x }
 
   result.map do |x|
-    { path: x }
+    { "path" => x }
   end
 end

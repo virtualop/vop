@@ -25,7 +25,7 @@ def param(name, options = {})
       list_command_name = "list_#{name.to_s.pluralize(42)}"
       p[:lookup] = lambda do |params|
         # TODO :name is probably specific to the entity (key?)
-        op.send(list_command_name.to_sym).map { |x| x[:name] }
+        op.send(list_command_name.to_sym).map { |x| x[entity[:key].to_sym] }
       end
     end
   end

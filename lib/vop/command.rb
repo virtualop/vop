@@ -40,7 +40,7 @@ module Vop
     # the default param is the one used when a command is called with a single "scalar" param only, like
     #   @op.foo("zaphod")
     # if a parameter is marked as default, it will be assigned the value "zaphod" in this case.
-    # if there's only a single param, it's the default param by default (ha!)
+    # if there is only a single param, it is the default param by default (ha!)
     def default_param
       if params.size == 1
         params.first
@@ -75,7 +75,7 @@ module Vop
         if ruby_args.is_a? Hash
           result = ruby_args
         else
-          # if there's a default param, it can be passed to execute as "scalar"
+          # if there is a default param, it can be passed to execute as "scalar"
           # param, but it will be converted into a "normal" named param
           dp = default_param
           if dp
@@ -93,7 +93,7 @@ module Vop
           if p[:multi] && ! v.is_a?(Array) then
             $logger.debug("autoboxing for #{p[:name]}")
             v = [ v ]
-          # array values are auto-unboxed if the param doesn't want multi
+          # array values are auto-unboxed if the param doesn"t want multi
           elsif ! p[:multi] && v.is_a?(Array) && v.length == 1
             $logger.debug("autounboxing for #{p[:name]}")
             v = v.first
@@ -140,15 +140,15 @@ module Vop
         param = nil
 
         case name.to_s
-        when 'params'
+        when "params"
           param = prepared
-        when 'plugin'
+        when "plugin"
           param = self.plugin
-        when 'context'
+        when "context"
           param = context
-        when 'shell'
-          raise "shell not supported" unless extra.has_key? 'shell'
-          param = extra['shell']
+        when "shell"
+          raise "shell not supported" unless extra.has_key? "shell"
+          param = extra["shell"]
         else
           if prepared.has_key? name.to_s
             param = prepared[name.to_s]
