@@ -28,9 +28,9 @@ module Vop
     }
 
     attr_reader :config
-
     attr_reader :plugins
-    attr_reader :commands, :filters, :filter_chain
+    attr_reader :commands
+    attr_reader :filters, :filter_chain
 
     def initialize(options = {})
       at_exit {
@@ -50,13 +50,19 @@ module Vop
       end
 
       $logger = Logger.new(STDOUT)
-      $logger.level = options["--verbose"] || options[:verbose] ? Logger::DEBUG : Logger::INFO
 
+      $logger.level = Logger::INFO
+      if options["--verbose"] || options[:verbose]
+        $logger.level = Logger::DEBUG
+      end
+      if options["--quiet"] || options[:quiet]
+        $logger.level = Logger::WARN
+      end
       $logger.debug "config : #{@config.inspect}"
 
       _reset
 
-      $logger.info "virtualop (#{@version}) init complete."
+      $logger.info "virtualop (#{@version}) init complete"
       $logger.info "hello."
     end
 

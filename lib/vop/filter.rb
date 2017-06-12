@@ -36,7 +36,7 @@ module Vop
     def execute(command_name, param_values, extra = {}, request = nil)
       block_param_names = self.block.parameters.map { |x| x.last }
 
-      $logger.debug "applying filter [#{self.name}] for #{command_name}"
+      #$logger.debug "applying filter [#{self.name}] for #{command_name}"
 
       payload = []
       context = {} # TODO should this be initialized?
@@ -45,12 +45,12 @@ module Vop
         param = nil
 
         param = case name.to_s
-        when 'request'
+        when "request"
           raise "sanity check failed: request nil" if request.nil?
           request
-        when 'command'
+        when "command"
           @plugin.op.command(command_name.split(".").first) # TODO shouldn't this be .last ?
-        when 'plugin'
+        when "plugin"
           @plugin
         else
           raise "unknown block param name : >>#{name}<<"

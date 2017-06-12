@@ -17,8 +17,9 @@ Usage:
 
 Options:
   -h --help       show this help screen
-  -v --verbose    enable debug output
   -e --execute=<command>  to run a command directly
+  -v --verbose    enable debug output
+  -q --quiet      be less verbose, do not print info level output
   -V --version    output release version
 
 DOCOPT

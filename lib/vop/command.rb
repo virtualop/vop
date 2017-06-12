@@ -91,11 +91,9 @@ module Vop
         if p
           # values are auto-boxed into an array if the param expects multiple values
           if p[:multi] && ! v.is_a?(Array) then
-            $logger.debug("autoboxing for #{p[:name]}")
             v = [ v ]
           # array values are auto-unboxed if the param doesn"t want multi
           elsif ! p[:multi] && v.is_a?(Array) && v.length == 1
-            $logger.debug("autounboxing for #{p[:name]}")
             v = v.first
           end
 
@@ -164,7 +162,7 @@ module Vop
         if param
           entity_names = @plugin.op.plugins["commands"].state[:entities].map { |entity| entity[:name] }
           if entity_names.include? name.to_s
-            $logger.debug "auto-inflating #{name.to_s}"
+            $logger.debug "auto-inflating entity #{name.to_s}"
             resolved = @plugin.op.send(name, param)
             param = resolved
             $logger.debug "...#{name.to_s} entity : #{resolved.inspect}"
@@ -173,7 +171,7 @@ module Vop
         end
       end
 
-      $logger.debug("payload : #{payload.inspect}")
+      #$logger.debug("payload : #{payload.inspect}")
 
       result = self.block.call(*payload)
       [result, context]

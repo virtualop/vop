@@ -166,7 +166,7 @@ class VopShellBackend < Backend
   end
 
   def process_input(command_line)
-    $logger.debug "+++ process_input #{command_line} +++"
+    $logger.debug "+++ processing user input '#{command_line}' +++"
 
     if @command_selected
       # we're in parameter processing mode - so check which parameter
