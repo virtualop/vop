@@ -23,8 +23,8 @@ module Vop
   class Vop
 
     DEFAULTS = {
-      search_path: [],
-      config_path: "/etc/vop"
+      "search_path" => [],
+      :config_path => "/etc/vop"
     }
 
     attr_reader :config
@@ -43,10 +43,10 @@ module Vop
       system_config = load_system_config()
       @config = DEFAULTS.merge(system_config).merge(options)
 
-      if options.has_key? :search_path
-        osp = options[:search_path]
+      if options.has_key? "search_path"
+        osp = options["search_path"]
         osp = [ osp ] unless osp.is_a?(Array)
-        @config[:search_path] += osp
+        @config["search_path"] += osp
       end
 
       $logger = Logger.new(STDOUT)
@@ -90,7 +90,7 @@ module Vop
 
     def core_path
       [ CORE_PLUGIN_PATH ] + # static path
-      config[:search_path] # config from /etc/vop
+      config["search_path"] # config from /etc/vop
     end
 
     def search_path

@@ -26,9 +26,9 @@ module SpecHelper
     end
 
     @vop = Vop::Vop.new(
-      search_path: [ TEST_SRC_PATH ],
-      config_path: TEST_CONFIG,
-      verbose: false
+      "search_path" => [ TEST_SRC_PATH ],
+      :config_path => TEST_CONFIG,
+      :verbose => false
     )
   end
 
