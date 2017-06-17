@@ -16,9 +16,14 @@ module Vop
 
       # TODO activate plugin_loader helpers?
       # (this will allow plugins to define helpers that can be used in plugins)
+      # (but it does not work for core plugins)
       #@plugin.inject_helpers(self)
       #@plugin.inject_helpers(self, 'plugin_loader')
       @plugin
+    end
+
+    def description(string)
+      @plugin.description = string
     end
 
     def on(hook_sym, &block)

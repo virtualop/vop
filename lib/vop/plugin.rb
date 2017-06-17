@@ -10,6 +10,7 @@ module Vop
     attr_reader :options
 
     attr_reader :commands
+    attr_accessor :description
     attr_accessor :config
     attr_reader :dependencies
 
@@ -20,6 +21,7 @@ module Vop
     def initialize(op, plugin_name, plugin_path, options = {})
       @op = op
       @name = plugin_name
+      @description = nil
       @path = plugin_path
       defaults = {
         autoload: true
