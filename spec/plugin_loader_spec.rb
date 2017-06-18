@@ -17,4 +17,11 @@ RSpec.describe Vop::PluginLoader do
       @loader.load([broken_path], [])
     }.to raise_error(NameError, /undefined.+motherfucker/)
   end
+
+  it "accepts descriptions for plugins" do
+    plugin_path = File.join(SpecHelper::TEST_SRC_PATH, "working")
+    Dir.mkdir(plugin_path)
+    IO.write(File.join(plugin_path, "working.plugin"), 'description "this plugin does not have a meaning"')
+    @loader.load([plugin_path], [])
+  end
 end

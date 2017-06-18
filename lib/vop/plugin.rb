@@ -158,11 +158,9 @@ module Vop
       load_code_from_dir :commands
 
       loader = CommandLoader.new(self)
-      @commands = loader.read_sources @sources[:commands]
-      @commands.each do |name, command|
-        # TODO might want to warn/debug about overrides here
-        @op.eat(command)
-      end
+      @commands = loader.read_sources(@sources[:commands])
+      # TODO might want to warn/debug about overrides here
+      @op.eat(@commands.values) unless @commands.size == 0
     end
 
     def load_filters

@@ -144,8 +144,9 @@ module Vop
       else
         $logger.debug "eating #{stuff.inspect}"
         if stuff.is_a? Plugin
-          @plugins[stuff.name] = stuff
-          stuff.init
+          plugin = stuff
+          @plugins[plugin.name] = plugin
+          plugin.init
         elsif stuff.is_a? Command
           command = stuff
           @commands[command.short_name] = command

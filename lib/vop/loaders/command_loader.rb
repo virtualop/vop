@@ -1,4 +1,4 @@
-require 'vop/command'
+require "vop/command"
 
 module Vop
 
@@ -13,7 +13,7 @@ module Vop
       # we need to load both the general helpers of the plugin because they are
       # used inside commands as well as the helpers specific to the command_loader
       @plugin.inject_helpers(self)
-      @plugin.inject_helpers(self, 'command_loader')
+      @plugin.inject_helpers(self, "command_loader")
     end
 
     def new_command(name)
