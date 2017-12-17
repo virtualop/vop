@@ -1,5 +1,0 @@
-on :init do |plugin|
-  plugin.state[:contributions] ||= Hash.new { |h,k| h[k] = [] }
-end
-
-depends :commands

@@ -1,6 +1,0 @@
-depends :core
-depends :commands
-
-on :init do |plugin|
-  plugin.state[:pool] = {}
-end
