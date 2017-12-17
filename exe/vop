@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+# if the VOP_DEV_MODE environment variable is set, add the lib directory next
+# to this exe folder to the load path so that the vop shell works without a gem
+require "pathname"
+if ENV["VOP_DEV_MODE"]
+  local_lib_path = File.join(Pathname.new(File.join(File.dirname(__FILE__), "..")).realpath, "lib")
+  puts "adding local lib path #{local_lib_path}"
+  $: << local_lib_path
+end
+
+require "vop"
+
+vop = Vop.setup
+Vop::Shell.run(vop)

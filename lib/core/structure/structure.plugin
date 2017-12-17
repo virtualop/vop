@@ -1,0 +1,4 @@
+hook :loading_finished do
+  @op.generate_entity_commands
+  @op.generate_invalidation_commands
+end

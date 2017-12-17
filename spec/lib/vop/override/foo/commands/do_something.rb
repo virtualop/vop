@@ -1,0 +1,3 @@
+run do
+  "foo"
+end
