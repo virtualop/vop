@@ -2,10 +2,11 @@ require "json"
 require_relative "../parts/entity_loader"
 require_relative "../parts/command_loader"
 require_relative "../parts/filter_loader"
+require_relative "thing_with_params"
 
 module Vop
 
-  class Plugin
+  class Plugin < ThingWithParams
 
     attr_reader :op
     attr_reader :name
@@ -19,6 +20,8 @@ module Vop
     attr_accessor :dependencies
 
     def initialize(op, plugin_name, plugin_path, options = {})
+      super()
+
       @op = op
       @name = plugin_name
       @path = plugin_path
@@ -177,6 +180,12 @@ module Vop
         result = @hooks[name].call(self, *args)
       end
       result
+    end
+
+    def template(name)
+      name += ".erb" unless name.ends_with? ".erb"
+      template_path = File.join(plugin_dir(:templates), name)
+      @op.read_template(template_path)
     end
 
   end

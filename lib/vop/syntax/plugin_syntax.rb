@@ -2,6 +2,29 @@ module Vop
 
   module PluginSyntax
 
+    def resolve_options_string(options)
+      if options.is_a? String
+        options = {
+          description: options
+        }
+      end
+      options
+    end
+
+    def config_param(name, options = {})
+      options = resolve_options_string(options)
+
+      @plugin.params << CommandParam.new(name, options)
+    end
+
+    def config_param!(name, options = {})
+      options = resolve_options_string(options)
+      options.merge! mandatory: true
+      config_param(name, options)
+    end
+
+
+
     def description(string)
       @plugin.description = string
     end

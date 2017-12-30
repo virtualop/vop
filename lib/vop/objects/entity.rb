@@ -26,6 +26,12 @@ module Vop
       @data[key]
     end
 
+    def plugin
+      if @data.has_key? "plugin_name"
+        @op.plugin(@data["plugin_name"])
+      end
+    end
+
     # all commands that have a parameter with the same name as the entity
     # are considered eligible for this entity (TODO that's too broad, isn't it?)
     def entity_commands

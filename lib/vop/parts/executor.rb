@@ -48,8 +48,10 @@ module Vop
 
       result.each do |k,v|
         param = request.command.param(k.to_s)
-        raise "no such param #{k.to_s} (in #{request.command.name})" unless param
-        p = param.options
+        if param.nil? && ! request.command.allows_extra
+          raise "no such param #{k.to_s} (in #{request.command.name})"
+        end
+        p = param && param.options
         if p
           # values are auto-boxed into an array if the param expects multiple values
           if p[:multi] && ! v.is_a?(Array) then

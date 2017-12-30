@@ -4,14 +4,17 @@ module Vop
 
   class Command
 
+    attr_accessor :plugin
     attr_accessor :name
+
     attr_accessor :block
     attr_accessor :params
-    attr_accessor :plugin
-    attr_accessor :show_options
     attr_accessor :description
+
+    attr_accessor :show_options
     attr_accessor :dont_register
     attr_accessor :read_only
+    attr_accessor :allows_extra
 
     def initialize(plugin, name)
       @plugin = plugin
@@ -25,6 +28,7 @@ module Vop
 
       @dont_register = false
       @read_only = false
+      @allows_extra = false
     end
 
     def short_name

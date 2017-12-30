@@ -38,7 +38,7 @@ module Vop
         name = name.to_s
       end
 
-      options = resolve_options_string(options)      
+      options = resolve_options_string(options)
 
       @command.add_param(name, options)
     end
@@ -51,6 +51,10 @@ module Vop
 
     def read_only
       @command.read_only = true
+    end
+
+    def allows_extra
+      @command.allows_extra = true
     end
 
     def show(options = {})

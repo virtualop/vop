@@ -2,6 +2,10 @@
 
 The vop is a systems automation scripting framework.
 
+## Status: WIP
+
+This is work in progress. Do not assume everything you read to be totally accurate as of now.
+
 ## Installation
 
 ### as a gem library for Ruby:
@@ -40,7 +44,7 @@ path, and the vop is loaded from there (no gem install needed).
 ### Plugins
 
 required:
-one (potentially empty) file called "<name>.plugin"
+one (potentially empty) file called "&lt;name&gt;.plugin"
 
 optional:
 ```

@@ -123,7 +123,7 @@ module Vop
 
       call_global_hook :loading_finished
 
-      $logger.info "startup finished : #{@plugins.size} plugins, #{@commands.size} commands"
+      $logger.info "init complete : #{@plugins.size} plugins, #{@commands.size} commands"
     end
 
     def <<(stuff)

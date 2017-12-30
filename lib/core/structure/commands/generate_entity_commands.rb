@@ -5,7 +5,7 @@ run do
 
   @op.entities.each do |entity_name, definition|
     list_command_name = definition.name.carefully_pluralize
-    $logger.debug "generating entity list command #{list_command_name}"
+    $logger.debug "generating entity list command #{list_command_name} (#{definition.plugin.name})"
 
     plugin = definition.plugin
 
@@ -16,7 +16,7 @@ run do
       list_command.add_param(definition.on.to_s, mandatory: true)
     end
 
-    list_command.block = lambda do |params, request, context|
+    list_command.block = lambda do |params, request, context, plugin|
       ex = Executor.new(@op)
       block_param_names = definition.block.parameters.map { |x| x.last }
       payload = ex.prepare_payload(request, context, block_param_names)
