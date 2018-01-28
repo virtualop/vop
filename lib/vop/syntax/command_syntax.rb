@@ -49,6 +49,18 @@ module Vop
       param(name, options)
     end
 
+    # TODO does not really work yet
+    def block_param(name = "block", options = {})
+      options.merge! block: true
+      param(name, options)
+    end
+
+    def block_param!(name = "block", options = {})
+      options = resolve_options_string(options)
+      options.merge! mandatory: true
+      block_param(name, options)
+    end
+
     def read_only
       @command.read_only = true
     end
@@ -58,13 +70,11 @@ module Vop
     end
 
     def show(options = {})
-      column_options = options.delete(:columns)
-      display_type = options.delete(:display_type)
+      @command.show_options[:columns] = options.delete(:columns)
+      @command.show_options[:display_type] = options.delete(:display_type)
+      @command.show_options[:sort] = options.delete(:sort)
 
       raise "unknown keyword #{options.keys.first}" if options.keys.length > 0
-
-      @command.show_options[:columns] = column_options
-      @command.show_options[:display_type] = display_type
     end
 
     def contribute(options, &block)

@@ -53,4 +53,12 @@ RSpec.describe Vop do
     }.to raise_error ::Vop::Errors::EntityLoadError
   end
 
+  it "does crash when an entity's key is called 'id'" do
+    expect {
+      vop = test_vop("entity_with_invalid_id")
+      # TODO vop.booms
+      raise "not checked"
+    }.to raise_error
+  end
+
 end

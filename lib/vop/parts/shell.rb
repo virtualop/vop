@@ -125,6 +125,13 @@ module Vop
           else
             puts "unknown $-command #{command} - try '$vop' maybe?"
           end
+        elsif command.start_with?('@')
+          if command.start_with?('@op')
+            puts "executing #{command}"
+            puts eval command
+          else
+            puts "unknown @-command #{command} - try '@op' maybe?"
+          end
         else
           if command.end_with?("?")
             help_command = command[0..-2]

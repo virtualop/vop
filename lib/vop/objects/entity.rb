@@ -46,9 +46,15 @@ module Vop
 
     def make_methods_for_commands
       entity_commands.each do |command|
-        self.class.send(:define_method, command.short_name) do |*args|
-          #$logger.debug "~ #{command.short_name} ~ (#{id})"
+        # TODO this is very similar to code in Vop.<<
+        self.class.send(:define_method, command.short_name) do |*args, &block|
+          $logger.debug "[#{@type}:#{id}] #{command.short_name} (#{args.pretty_inspect}, block? #{block_given?})"
           ruby_args = args.length > 0 ? args[0] : {}
+          # TODO we might want to do this only if there's a block param defined
+          # TODO this does not work if *args comes with a scalar default param
+          if block
+            ruby_args["block"] = block
+          end
           @op.execute(command.short_name, ruby_args, { @type.to_s => id })
         end
       end

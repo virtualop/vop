@@ -33,12 +33,14 @@ module Vop
     def format(request, response, display_type)
       data = response.result
       command = request.command
+      show_options = command.show_options
 
       result = case display_type
       when :table
+        puts "show options : #{show_options}"
         columns_to_display =
-          if command.show_options.include? :columns
-            command.show_options[:columns]
+          if show_options[:columns]
+            show_options[:columns]
           else
             # TODO this is not optimal - what if the second row has more keys than the first?
             first_row = data.first
@@ -58,7 +60,9 @@ module Vop
           rearranged << values
         end
 
-        rearranged.sort_by! { |row| row.first || "" }
+        unless show_options.include?(:sort) && show_options[:sort] == false
+          rearranged.sort_by! { |row| row.first || "" }
+        end
 
         # add the index column after sorting
         rearranged.each_with_index do |row, index|

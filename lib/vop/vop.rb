@@ -29,8 +29,10 @@ module Vop
 
     def initialize(options = {})
       @options = {
-        config_path: "/etc/vop"
+        config_path: "/etc/vop",
+        log_level: Logger::INFO
       }.merge(options)
+      $logger.level = @options[:log_level]
 
       @finder = PluginFinder.new
       @loader = PluginLoader.new(self)
@@ -146,15 +148,19 @@ module Vop
             end
             @commands[command.short_name] = stuff
 
-            self.class.send(:define_method, command.short_name) do |*args|
+            self.class.send(:define_method, command.short_name) do |*args, &block|
               ruby_args = args.length > 0 ? args[0] : {}
+              # TODO we might want to do this only if there's a block param defined
+              if block
+                ruby_args["block"] = block
+              end
               self.execute(command.short_name, ruby_args)
             end
           end
         elsif stuff.is_a? Filter
           short_name = stuff.short_name
-          @filters[stuff.short_name] = stuff
-          @filter_chain.unshift stuff.short_name
+          @filters[short_name] = stuff
+          @filter_chain.unshift short_name
         else
           raise Errors::LoadError.new "unexpected type '#{stuff.class}'"
         end

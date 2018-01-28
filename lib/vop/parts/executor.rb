@@ -122,7 +122,7 @@ module Vop
 
               list_command_name = entity.short_name.carefully_pluralize
               the_list = @op.execute(list_command_name, {})
-              $logger.debug "inflated entity list : #{the_list.size} entities"
+              #$logger.debug "inflated entity list : #{the_list.size} entities"
               param = the_list.select { |x| x[entity.key] == param }.first
             end
           end

@@ -1,50 +1,50 @@
-# Vop
+
 
 The vop is a systems automation scripting framework.
 
-## Status: WIP
+It organizes (ruby) scripts into commands living in plugins, defines services that can be installed and managed, and comes with a shell and a web interface.
 
-This is work in progress. Do not assume everything you read to be totally accurate as of now.
+# Status: WIP
 
-## Installation
+This is work in progress. Do not assume everything you read to be totally accurate and/or stable.
 
-### as a gem library for Ruby:
+# Installation
 
-Install via `gem`:
+## as a gem:
 
     $ gem install vop
 
-or add this dependency to your `Gemfile`:
-```ruby
-gem 'vop'
-```
-
-(and then run `bundle`)
-
-## Usage
+# Usage
 
 Call `vop` to start the shell.
 
-Use the tab key for completion, type "help" for more info, "list_plugins" and "list_commands" for an overview/inspiration.
+Use the tab key for completion, type "help" for more info, `list_plugins` and `list_commands` for an overview.
 
-## Development
+# Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+### dependencies
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+* (to checkout sources: git)
+* ruby + headers (e.g. packages `ruby` and `ruby-dev` on Ubuntu)
+* bundler (`gem install bundler`)
 
-### without building gems
+### setup
+After checking out the repo, run `bin/setup` to install dependencies. Then, run `bundle exec rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
-The launcher/wrapper script `exe/vop` checks for the presence of the environment variable
-`VOP_DEV_MODE` - if it is set, the "lib/" directory next to the script is added to the library
-path, and the vop is loaded from there (no gem install needed).
+To start the vop from the checked out sources, set the environment variable `VOP_DEV_MODE` to any value, e.g. like this:
+```
+export VOP_DEV_MODE=1
+```
+and then run `exe/vop`.
+
+### packaging
+To install the vop from source as a gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
 ## Syntax
 
 ### Plugins
 
-required:
-one (potentially empty) file called "&lt;name&gt;.plugin"
+Minimally, a plugin is a folder containing a file called "&lt;name&gt;.plugin". An empty file will do.
 
 optional:
 ```
@@ -53,10 +53,12 @@ description "really nice plugin, this one"
 auto_load false    # default is true
 
 depends_on :other_plugin
-depends_on [ :foo, :bar, :baz ]
+depends_on [ :many, :other, :plugins ]
 ```
 
 ### Commands
+
+are loaded from the `commands` folder in a plugin.
 
 minimal:
 ```
@@ -75,9 +77,13 @@ defining params:
 param "snafoo"    # optional
 param! "snafoo"   # mandatory
 param! :snafoo    # entity
-
+```
+or a bit more formally:
+```
 param[!] ( "name" | :entity ) [, {option: value}]
-
+```
+full example:
+```
 param! "foo",
   description: "it's the foo.",
   multi: true,
@@ -115,6 +121,7 @@ end
 show (display options for shell output):
 ```
 show columns: ["name", "number"]
+show sort: false
 show display_type: :raw
 ```
 `display_type` can be any of:
