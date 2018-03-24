@@ -15,7 +15,6 @@ require_relative "util/worker"
 module Vop
 
   $logger = Logger.new(STDOUT)
-  $logger.level = Logger::INFO
 
   class Vop
 
@@ -129,6 +128,7 @@ module Vop
     def load
       load_from(core_location, { core: true })
       load_from(plugin_locations)
+      load_from(search_path)
 
       call_global_hook :loading_finished
 

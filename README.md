@@ -20,29 +20,9 @@ Call `vop` to start the shell.
 
 Use the tab key for completion, type "help" for more info, `list_plugins` and `list_commands` for an overview.
 
-# Development
+# Syntax
 
-### dependencies
-
-* (to checkout sources: git)
-* ruby + headers (e.g. packages `ruby` and `ruby-dev` on Ubuntu)
-* bundler (`gem install bundler`)
-
-### setup
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `bundle exec rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To start the vop from the checked out sources, set the environment variable `VOP_DEV_MODE` to any value, e.g. like this:
-```
-export VOP_DEV_MODE=1
-```
-and then run `exe/vop`.
-
-### packaging
-To install the vop from source as a gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Syntax
-
-### Plugins
+## Plugins
 
 Minimally, a plugin is a folder containing a file called "&lt;name&gt;.plugin". An empty file will do.
 
@@ -71,7 +51,7 @@ hook :after_execute do |payload|
 end
 ```
 
-### Commands
+## Commands
 
 ...are loaded from the `commands` folder in a plugin.
 
@@ -149,7 +129,7 @@ show display_type: :raw
 ```
 (see [`shell/formatter.rb`](https://github.com/virtualop/vop/blob/master/lib/vop/parts/shell_formatter.rb))
 
-### Services
+## Services
 
 Plugin folder: `services`
 
@@ -177,6 +157,28 @@ deploy do |machine|
 end
 ```
 
-## Contributing
+# Development
+
+## required dependencies
+
+* (to checkout sources: git)
+* ruby + headers (e.g. packages `ruby` and `ruby-dev` on Ubuntu)
+* bundler (`gem install bundler`)
+
+## setup
+After checking out the repo, run `bin/setup` to install (gem) dependencies.
+Then, run `bundle exec rake spec` to run the tests.
+You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+
+To start the vop from the checked out sources, set the environment variable `VOP_DEV_MODE` to any value, e.g. like this:
+```
+export VOP_DEV_MODE=1
+```
+and then run `exe/vop`.
+
+### packaging
+To install the vop from source as a gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+
+# Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/virtualop/vop.
