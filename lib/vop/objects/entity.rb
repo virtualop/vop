@@ -10,7 +10,7 @@ module Vop
       @key = key
       @data = data
 
-      unless @data[@key]
+      unless @data.has_key? @key
         raise "key #{key} not found in data : #{data.keys.sort}"
       end
 

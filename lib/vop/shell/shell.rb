@@ -1,6 +1,7 @@
 require "readline"
 require_relative "shell_formatter"
 require_relative "shell_input"
+require_relative "shell_input_readline"
 
 module Vop
 
@@ -8,13 +9,17 @@ module Vop
 
     attr_reader :context
 
-    def initialize(op)
+    def initialize(op, input = nil)
       @op = op
       @context = {}
 
       @formatter = ShellFormatter.new
+
       # TODO for testing
-      #@input = ShellInput.new
+      if input.nil?
+        input = ShellInputReadline.new(method(:tab_completion))
+      end
+      @input = input
 
       trap('INT') {
         handle_interrupt
@@ -139,14 +144,18 @@ module Vop
             args << "name=#{help_command}"
           end
 
-          known_commands = @op.commands.keys
-          if known_commands.include? command
-            @command = @op.commands[command]
-            @arguments = parse_command_line(args)
-
-            maybe_execute
+          if command == "exit"
+            @input.exit
           else
-            puts "unknown command '#{command}'"
+            known_commands = @op.commands.keys
+            if known_commands.include? command
+              @command = @op.commands[command]
+              @arguments = parse_command_line(args)
+
+              maybe_execute
+            else
+              puts "unknown command '#{command}'"
+            end
           end
         end
       end
@@ -181,13 +190,14 @@ module Vop
     end
 
     def do_it(command_line = nil)
-      Readline.completion_append_character = ""
-      Readline.completion_proc = method(:tab_completion)
+      #Readline.completion_append_character = ""
+      #Readline.completion_proc = method(:tab_completion)
 
       if command_line
         parse_and_execute(command_line)
       else
-        while line = Readline.readline(@prompt, true)
+        while line = @input.read(@prompt)
+        #while line = Readline.readline(@prompt, true)
           if @command
             # if a command has already been selected, we ask for missing params
             accept_param(line)

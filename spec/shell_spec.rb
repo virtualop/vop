@@ -47,12 +47,26 @@ RSpec.describe Vop::Shell do
     end
   end
 
+  def parse_table(command_name)
+    formatted = format(command_name).to_s.lines
+    # lines 0 and 2 are decoration
+    header = formatted[1]
+    first_line = formatted[3]
+    puts "header : #{header}"
+    puts "first line : #{first_line}"
+
+    header_fields = header.split("|").map(&:strip).select { |x| x != '#' && x != '' }
+    columns = first_line.split("|").map(&:strip).select { |x| x.to_s != '' }
+
+    [header_fields, columns]
+  end
+
   it "executes commands like a REPL" do
 
     # PTY.spawn('') do |output, input|
     #   output.readpartial 1024 # read past the prompt
     # end
-
+    $logger.info "shell_spec"
     Vop::Shell.run(nil, 'list_plugins')
   end
 
@@ -87,20 +101,6 @@ RSpec.describe Vop::Shell do
   it "displays raw values as is" do
     formatted = format("so_raw")
     expect(formatted).to eql(42)
-  end
-
-  def parse_table(command_name)
-    formatted = format(command_name).to_s.lines
-    # lines 0 and 2 are decoration
-    header = formatted[1]
-    first_line = formatted[3]
-    puts "header : #{header}"
-    puts "first line : #{first_line}"
-
-    header_fields = header.split("|").map(&:strip).select { |x| x != '#' && x != '' }
-    columns = first_line.split("|").map(&:strip).select { |x| x.to_s != '' }
-
-    [header_fields, columns]
   end
 
   it "displays tables" do

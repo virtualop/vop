@@ -51,14 +51,29 @@ optional:
 description "really nice plugin, this one"
 
 auto_load false    # default is true
+```
 
+dependencies:
+```
 depends_on :other_plugin
 depends_on [ :many, :other, :plugins ]
 ```
 
+hooks:
+```
+hook :before_execute do |payload|
+  request = payload[:request]
+end
+
+hook :after_execute do |payload|
+  request = payload[:request]
+  response = payload[:response]
+end
+```
+
 ### Commands
 
-are loaded from the `commands` folder in a plugin.
+...are loaded from the `commands` folder in a plugin.
 
 minimal:
 ```
@@ -72,13 +87,13 @@ description "Roses are red."
 read_only   # => cacheable
 ```
 
-defining params:
+defining param(eter)s:
 ```
 param "snafoo"    # optional
 param! "snafoo"   # mandatory
 param! :snafoo    # entity
 ```
-or a bit more formally:
+param syntax:
 ```
 param[!] ( "name" | :entity ) [, {option: value}]
 ```

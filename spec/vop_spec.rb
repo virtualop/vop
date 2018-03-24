@@ -4,10 +4,12 @@ require "tempfile"
 RSpec.describe Vop do
 
   before(:example) do
+    $logger.info "before vop_spec"
     @vop = test_vop
   end
 
   it "has a version number" do
+    $logger.info "vop_spec"
     expect(Vop::VERSION).not_to be nil
   end
 

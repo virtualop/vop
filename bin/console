@@ -10,5 +10,8 @@ require "vop"
 # require "pry"
 # Pry.start
 
+@op = Vop.boot
+puts "A Vop instance is available in @op."
+
 require "irb"
 IRB.start(__FILE__)

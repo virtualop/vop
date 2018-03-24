@@ -10,6 +10,7 @@ require_relative "objects/entity"
 require_relative "objects/entities"
 require_relative "util/errors"
 require_relative "util/pluralizer"
+require_relative "util/worker"
 
 module Vop
 
@@ -57,6 +58,12 @@ module Vop
 
     def to_s
       "Vop (#{@plugins.size} plugins)"
+    end
+
+    def inspect
+      {
+        plugins: @plugins.map(&:name)
+      }.to_json()
     end
 
     def plugin(name)
@@ -178,10 +185,18 @@ module Vop
     end
 
     def execute_request(request)
-      # TODO call_hook :before_execute, request
-      response = request.execute()
-      # call_hook :after_execute, request, response
+      call_global_hook(:before_execute, { request: request })
+      begin
+        response = request.execute()
+      rescue => e
+        response = ::Vop::Response.new(nil, {})
+        response.status = "error"
+        raise e
+      ensure
+        call_global_hook(:after_execute, { request: request, response: response })
+      end
 
+      #$logger.debug "executed : #{request.command.name}, response : #{response.pretty_inspect}"
       response
     end
 
@@ -190,6 +205,10 @@ module Vop
       response = execute_request(request)
 
       response.result
+    end
+
+    def execute_async(request)
+      AsyncExecutorWorker.perform_async(request.to_json)
     end
 
   end

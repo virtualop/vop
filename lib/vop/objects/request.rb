@@ -38,6 +38,19 @@ module Vop
       "vop/request:#{command.name}:" + param_string + ":v1"
     end
 
+    def self.from_json(op, json)
+      hash = JSON.parse(json)
+      self.new(op, hash["command"], hash["params"], hash["extra"])
+    end
+
+    def to_json
+      {
+          command: @command_name,
+          params: @param_values,
+          extra: @extra
+      }.to_json
+    end
+
     def next_filter
        @chain.next()
     end

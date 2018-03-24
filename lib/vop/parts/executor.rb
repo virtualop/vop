@@ -111,9 +111,9 @@ module Vop
         end
 
         unless param.nil?
-          # auto-inflate entities
           command_param = request.command.param(name.to_s)
           if command_param && command_param.options[:entity]
+            # auto-inflate entities
             entity_list = @op.entities.values
             entity = entity_list.select { |x| x.short_name == name.to_s }.first
 

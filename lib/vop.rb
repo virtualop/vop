@@ -1,11 +1,29 @@
+require "pathname"
+
 require_relative "vop/version"
-require_relative "vop/parts/shell"
+require_relative "vop/shell/shell"
 require_relative "vop/vop"
 
 module Vop
 
   def self.setup(options = {})
-    Vop.new(options)
+    ::Vop::Vop.new(options)
+  end
+
+  def self.boot(options = {})
+    if ENV["VOP_DEV_MODE"]
+      sibling_lib_dir = Pathname.new(File.join(File.dirname(__FILE__), "..", "lib")).realpath
+      if File.exists? sibling_lib_dir
+        #puts "adding local lib path #{sibling_lib_dir}"
+        $: << sibling_lib_dir
+      end
+    end
+
+    ::Vop.setup(options)
+  end
+
+  def vop_setup(options = {})
+    ::Vop.boot(options)
   end
 
 end

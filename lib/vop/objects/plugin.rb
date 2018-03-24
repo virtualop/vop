@@ -52,8 +52,11 @@ module Vop
 
       @sources = Hash.new { |h, k| h[k] = {} }
 
+      @config = {}
+
       # call_hook :preload ?
       load_helpers
+      load_default_config
       load_config
 
       # TODO proceed only if auto_load
@@ -69,13 +72,22 @@ module Vop
       File.join(@path, name.to_s)
     end
 
+    def load_default_config
+      params.each do |param|
+        if param.options.has_key?(:default)
+          @config[param.name] = param.options[:default]
+        end
+      end
+    end
+
     def load_config
       $logger.debug "looking for config at #{@config_file_name}"
       if File.exists? @config_file_name
         raw = nil
         begin
           raw = IO.read(@config_file_name)
-          @config = JSON.parse(raw)
+          config_from_file = JSON.parse(raw)
+          @config.merge! config_from_file
           $logger.debug "plugin config loaded from #{@config_file_name}"
         rescue => e
           $logger.error "could not read JSON config from #{@config_file_name} (#{e.message}), ignoring:\n#{raw}"
@@ -182,10 +194,13 @@ module Vop
       result
     end
 
-    def template(name)
+    def template_path(name)
       name += ".erb" unless name.ends_with? ".erb"
-      template_path = File.join(plugin_dir(:templates), name)
-      @op.read_template(template_path)
+      File.join(plugin_dir(:templates), name)
+    end
+
+    def template(name)
+      @op.read_template(template_path(name))
     end
 
   end

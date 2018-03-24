@@ -37,7 +37,6 @@ module Vop
 
       result = case display_type
       when :table
-        puts "show options : #{show_options}"
         columns_to_display =
           if show_options[:columns]
             show_options[:columns]

@@ -1,4 +1,4 @@
-# coding: utf-8
+# encoding: utf-8
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "vop/version"
@@ -9,9 +9,9 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Philipp T."]
   spec.email         = ["philipp@hitchhackers.net"]
 
-  spec.summary       = %q{The vop is a systems automation scripting framework.}
-  spec.description   = %q{yo mama is not a description}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.summary       = %q{The vop is a scripting framework.}
+  spec.description   = %q{Automation framework with a plugin/command architecture, entities, contributions, filters and asynchronous workers. Shell included, web interface in a separate project.}
+  spec.homepage      = "http://virtulop.org"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
   # to allow pushing to a single host or delete this section to allow pushing to any host.
