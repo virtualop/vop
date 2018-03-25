@@ -4,7 +4,7 @@ require "digest"
 
 contribute to: "search_path" do |params|
   gem_list = `gem list`.split("\n")
-  candidates = gem_list.select { |x| x =~ /vop/ }
+  candidates = gem_list.select { |x| x =~ /vop-\w+/ }
 
   # checksum = Digest::MD5.new
   # candidates.map do |candidate|
