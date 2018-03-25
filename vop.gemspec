@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{The vop is a scripting framework.}
   spec.description   = %q{Automation framework with a plugin/command architecture, entities, contributions, filters and asynchronous workers. Shell included, web interface in a separate project.}
-  spec.homepage      = "http://virtulop.org"
+  spec.homepage      = "http://virtualop.org"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
   # to allow pushing to a single host or delete this section to allow pushing to any host.
@@ -35,8 +35,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "sidekiq"
   spec.add_dependency "terminal-table"
   spec.add_dependency "xml-simple"
-
-  spec.add_dependency "vop-plugins"
 
   spec.add_development_dependency "bundler", "~> 1.15"
   spec.add_development_dependency "rake", "~> 10.0"

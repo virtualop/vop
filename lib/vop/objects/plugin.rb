@@ -195,7 +195,7 @@ module Vop
     end
 
     def template_path(name)
-      name += ".erb" unless name.ends_with? ".erb"
+      name += ".erb" unless name.end_with? ".erb"
       File.join(plugin_dir(:templates), name)
     end
 
