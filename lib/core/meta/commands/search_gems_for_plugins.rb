@@ -6,6 +6,7 @@ contribute to: "search_path" do |params|
   gem_list = `gem list`.split("\n")
   candidates = gem_list.select { |x| x =~ /vop-\w+/ }
 
+  # TODO cache which gems have already been inspected
   # checksum = Digest::MD5.new
   # candidates.map do |candidate|
   #   checksum << [ candidate.name, candidate.version ].join(":")
