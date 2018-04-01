@@ -111,6 +111,10 @@ module Vop
       @plugin_config_path ||= File.join(config_path, "plugins.d")
     end
 
+    def executor
+      @executor ||= Executor.new(self)
+    end
+
     def load_from(locations, load_options = {})
       found = finder.find(locations)
       plugins = loader.load(found, load_options)

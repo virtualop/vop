@@ -10,6 +10,7 @@ module Vop
     attr_accessor :block
     attr_accessor :params
     attr_accessor :description
+    attr_accessor :invalidation_block
 
     attr_accessor :show_options
     attr_accessor :dont_register
@@ -22,6 +23,8 @@ module Vop
       @description = nil
 
       @block = lambda { |params| $logger.warn "#{name} not yet implemented!" }
+      #@invalidation_block = lambda { |params| $logger.warn "invalidation block for #{name} not yet implemented."}
+      @invalidation_block = nil
 
       @params = []
       @show_options = {}

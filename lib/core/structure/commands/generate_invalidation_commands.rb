@@ -3,7 +3,8 @@ description "all read-only commands get <command>! commands that invalidate auto
 run do
   count = 0
   @op.commands.values.each do |command|
-    if command.read_only
+    # actually, all read-only commands *and* all commands with an invalidation block
+    if command.read_only || command.invalidation_block
       invalidation_command_name = "#{command.short_name}!"
       $logger.debug "generating invalidation command #{invalidation_command_name}"
 

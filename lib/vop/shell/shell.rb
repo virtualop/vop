@@ -69,7 +69,9 @@ module Vop
         (@context.keys.include?(param.name) && param.wants_context)
       end
 
-      $logger.debug "missing params : #{missing_mandatory_params.map(&:name)}"
+      if missing_mandatory_params.size > 0
+        $logger.debug "missing params : #{missing_mandatory_params.map(&:name)}"
+      end
 
       if missing_mandatory_params.size > 0
         @missing_params = missing_mandatory_params

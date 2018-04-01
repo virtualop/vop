@@ -85,6 +85,10 @@ module Vop
       @command.block = block
     end
 
+    def invalidate(&block)
+      @command.invalidation_block = block
+    end
+
   end
 
 end
