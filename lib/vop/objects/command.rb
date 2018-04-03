@@ -23,7 +23,6 @@ module Vop
       @description = nil
 
       @block = lambda { |params| $logger.warn "#{name} not yet implemented!" }
-      #@invalidation_block = lambda { |params| $logger.warn "invalidation block for #{name} not yet implemented."}
       @invalidation_block = nil
 
       @params = []
