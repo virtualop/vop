@@ -1,6 +1,7 @@
 param! "name", lookup: lambda { @op.commands.keys + @op.entities.keys + @op.filters.keys }
+param "numbers", default: true
 
-run do |name|
+run do |name, numbers|
   (source, thing) = if @op.commands.keys.include? name
     [ :commands, @op.commands[name] ]
   elsif @op.entities.keys.include? name
@@ -14,7 +15,12 @@ run do |name|
   result = []
   result << " "
   code.lines.each_with_index { |line, idx|
-    result << "%02d %s" % [idx+1, line.chomp]
+    line.chomp!
+    line = numbers ?
+      "%02d %s" % [idx+1, line] :
+      line
+
+    result << line
   }
   result << " "
   result.join("\n")
