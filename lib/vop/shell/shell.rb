@@ -45,7 +45,7 @@ module Vop
         puts
         print @prompt
       else
-        puts "\nbye"
+        puts "\n"
         exit
       end
     end

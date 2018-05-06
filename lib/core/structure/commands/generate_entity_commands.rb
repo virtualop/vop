@@ -4,13 +4,12 @@ run do
   result = []
 
   @op.entities.each do |entity_name, definition|
-    list_command_name = definition.name.carefully_pluralize
-    $logger.debug "generating entity list command #{list_command_name} (#{definition.plugin.name})"
+    $logger.debug "generating entity list command #{definition.list_command_name} (#{definition.plugin.name})"
 
     plugin = definition.plugin
 
-    list_command = Command.new(plugin, list_command_name)
-    # TODO list_command.read_only = true
+    list_command = Command.new(plugin, definition.list_command_name)
+    list_command.read_only = definition.read_only
 
     if definition.on
       list_command.add_param(definition.on.to_s, mandatory: true)
@@ -43,6 +42,9 @@ run do
         ::Vop::Entities.new(entity_array)
       end
     end
+
+    list_command.invalidation_block = definition.invalidation_block
+
     result << list_command
   end
 

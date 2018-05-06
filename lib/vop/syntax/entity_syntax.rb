@@ -30,6 +30,10 @@ module Vop
       @entity.show_options[:display_type] = display_type
     end
 
+    def invalidate(&block)
+      @entity.invalidation_block = block
+    end
+
   end
 
 end

@@ -2,7 +2,7 @@ begin
   require "active_support/inflector"
 rescue Exception => e
   message = "active_support inflector cannot be loaded - pluralization results may deviate : #{e.message}"
-  puts message
+  #puts message
 end
 
 module Vop
