@@ -186,6 +186,12 @@ module Vop
       @hooks[hook_sym].each do |h|
         h.call(payload)
       end
+
+      @plugins.each do |plugin|
+        if plugin.has_hook? hook_sym
+          plugin.call_hook(hook_sym, payload)
+        end
+      end
     end
 
     def execute_request(request)

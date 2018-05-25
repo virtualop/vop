@@ -186,6 +186,10 @@ module Vop
       @hooks[name.to_sym] = block
     end
 
+    def has_hook?(name)
+      ! @hooks[name.to_sym].nil?
+    end
+
     def call_hook(name, *args)
       result = nil
       if @hooks.has_key? name
