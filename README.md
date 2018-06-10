@@ -55,23 +55,23 @@ end
 
 ...are loaded from the `commands` folder in a plugin.
 
-minimal:
+Minimally, a command needs only a run block:
 ```
 run { 42 }
 ```
 
-optional:
+Also, you can use any of these:
 ```
 description "Roses are red."
 
 read_only   # => cacheable
 ```
 
-defining param(eter)s:
+A command can define parameters
 ```
 param "snafoo"    # optional
 param! "snafoo"   # mandatory
-param! :snafoo    # entity
+param! :snafoo    # mandatory entity
 ```
 param syntax:
 ```
@@ -105,6 +105,24 @@ run do |machine|
   puts machine.name
 end
 ```
+
+There is special handling in place for block parameters.
+
+Declare one with
+```
+block_param
+```
+or
+```
+block_param!
+```
+and a block can be passed to the command like this:
+```
+@op.foo do
+  # whatever you need to do
+end
+```
+From inside your command, you can access the block through the parameter called `block`.
 
 contribute:
 ```

@@ -49,7 +49,6 @@ module Vop
       param(name, options)
     end
 
-    # TODO does not really work yet
     def block_param(name = "block", options = {})
       options.merge! block: true
       param(name, options)
