@@ -19,7 +19,9 @@ module Vop
       options
     end
 
-    def param(name, options = {})
+    def param(name, options = {}, more_options = {})
+      options = resolve_options_string(options).merge(more_options)
+
       if name.is_a? Symbol
         key = "name" # default for select_machine
         entity = @op.entities.values.select { |x| x.short_name == name.to_s }.first
@@ -38,13 +40,11 @@ module Vop
         name = name.to_s
       end
 
-      options = resolve_options_string(options)
-
       @command.add_param(name, options)
     end
 
-    def param!(name, options = {})
-      options = resolve_options_string(options)
+    def param!(name, options = {}, more_options = {})
+      options = resolve_options_string(options).merge(more_options)
       options.merge! mandatory: true
       param(name, options)
     end
