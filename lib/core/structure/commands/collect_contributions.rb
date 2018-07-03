@@ -31,7 +31,7 @@ run do |command_name, raw_params|
     contribution = @op.execute(short_name, raw_params)
 
     if contribution.nil?
-      $logger.warn "command #{short_name} contributes a nil value"
+      $logger.debug "command #{short_name} contributes a nil value"
     else
       case display_type
       when :table
