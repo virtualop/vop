@@ -140,7 +140,11 @@ module Vop
             puts "unknown @-command #{command} - try '@op' maybe?"
           end
         else
-          if command.end_with?("?")
+          if command.end_with?("??")
+            help_command = command[0..-3]
+            command = "source"
+            args << "name=#{help_command}"
+          elsif command.end_with?("?")
             help_command = command[0..-2]
             command = "help"
             args << "name=#{help_command}"
