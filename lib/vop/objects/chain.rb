@@ -15,9 +15,12 @@ module Vop
 
     def execute(request)
       next_link = self.next
-      response = nil
-      response = next_link.execute(request) if next_link
-      response
+
+      if next_link
+        next_link.execute(request)
+      else
+        nil
+      end
     end
 
   end

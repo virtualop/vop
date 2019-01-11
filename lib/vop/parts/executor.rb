@@ -118,11 +118,8 @@ module Vop
             entity = entity_list.select { |x| x.short_name == name.to_s }.first
 
             unless entity.nil?
-              #$logger.debug "auto-inflating entity #{name.to_s} (#{param})"
-
               list_command_name = entity.short_name.carefully_pluralize
               the_list = @op.execute(list_command_name, {})
-              #$logger.debug "inflated entity list : #{the_list.size} entities"
               param = the_list.select { |x| x[entity.key] == param }.first
             end
           end

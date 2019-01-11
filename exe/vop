@@ -2,5 +2,5 @@
 
 require "vop"
 
-@op = Vop.boot()
+@op = Vop.boot(origin: "shell:#{Process.pid}@#{`hostname`.strip}")
 Vop::Shell.run(@op)

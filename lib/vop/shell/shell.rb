@@ -15,7 +15,7 @@ module Vop
 
       @formatter = ShellFormatter.new
 
-      # TODO for testing
+      # for testing
       if input.nil?
         input = ShellInputReadline.new(method(:tab_completion))
       end
@@ -78,7 +78,7 @@ module Vop
         @prompt = "#{@command.short_name}.#{@missing_params.first.name} ? "
       else
         begin
-          request = Request.new(@op, @command.short_name, @arguments, @context)
+          request = @op.prepare_request(@command.short_name, @arguments, @context)
           request.shell = self
           response = @op.execute_request(request)
 
@@ -217,7 +217,7 @@ module Vop
 
     def self.run(op = nil, command_line = nil)
       if op.nil?
-        op = Vop.new
+        op = Vop.new(origin: "shell:#{Process.pid}@#{`hostname`.strip}")
       end
       self.new(op).do_it(command_line)
     end

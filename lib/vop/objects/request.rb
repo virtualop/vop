@@ -8,8 +8,9 @@ module Vop
 
     attr_reader :command_name, :param_values, :extra
     attr_accessor :shell
+    attr_accessor :origin
 
-    def initialize(op, command_name, param_values = {}, extra = {})
+    def initialize(op, command_name, param_values = {}, extra = {}, origin = nil)
       @op = op
       @command_name = command_name
       raise "unknown command '#{command_name}'" if command.nil?
@@ -19,6 +20,7 @@ module Vop
 
       @current_filter = nil
       @filter_chain = @op.filter_chain.clone
+      @origin = origin || {}
     end
 
     def command
@@ -40,13 +42,14 @@ module Vop
 
     def self.from_json(op, json)
       hash = JSON.parse(json)
-      self.new(op, hash["command"], hash["params"], hash["extra"])
+      self.new(op, hash["command"], hash["params"], hash["extra"], hash["origin"])
     end
 
     def to_json
       {
           command: @command_name,
           params: @param_values,
+          origin: @origin,
           extra: @extra
       }.to_json
     end

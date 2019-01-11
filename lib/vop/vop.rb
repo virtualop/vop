@@ -194,6 +194,12 @@ module Vop
       end
     end
 
+    def prepare_request(command_name, param_values = {}, extra = {})
+      request = Request.new(self, command_name, param_values, extra)
+      request.origin = @options[:origin]
+      request
+    end
+
     def execute_request(request)
       call_global_hook(:before_execute, { request: request })
       begin
@@ -206,18 +212,17 @@ module Vop
         call_global_hook(:after_execute, { request: request, response: response })
       end
 
-      #$logger.debug "executed : #{request.command.name}, response : #{response.pretty_inspect}"
       response
     end
 
     def execute(command_name, param_values = {}, extra = {})
-      request = Request.new(self, command_name, param_values, extra)
+      request = prepare_request(command_name, param_values, extra)
       response = execute_request(request)
-
       response.result
     end
 
     def execute_async(request)
+      request.origin ||= @options[:origin]
       AsyncExecutorWorker.perform_async(request.to_json)
     end
 

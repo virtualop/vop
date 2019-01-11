@@ -14,9 +14,12 @@ module Vop
     if ENV["VOP_DEV_MODE"]
       sibling_lib_dir = Pathname.new(File.join(File.dirname(__FILE__), "..", "lib")).realpath
       if File.exists? sibling_lib_dir
-        #puts "adding local lib path #{sibling_lib_dir}"
         $: << sibling_lib_dir
       end
+    end
+
+    if ENV["VOP_ORIGIN"]
+      options[:origin] = "#{ENV["VOP_ORIGIN"]}:#{Process.pid}@#{`hostname`.strip}"
     end
 
     ::Vop.setup(options)
