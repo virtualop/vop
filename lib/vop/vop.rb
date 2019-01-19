@@ -194,9 +194,10 @@ module Vop
       end
     end
 
-    def prepare_request(command_name, param_values = {}, extra = {})
+    def prepare_request(command_name, param_values = {}, extra = {}, origin_suffix = nil)
       request = Request.new(self, command_name, param_values, extra)
-      request.origin = @options[:origin]
+      request.origin = "#{@options[:origin]}"
+      request.origin += ":#{origin_suffix}" unless origin_suffix.nil?
       request
     end
 
@@ -205,7 +206,7 @@ module Vop
       begin
         response = request.execute()
       rescue => e
-        response = ::Vop::Response.new(nil, {})
+        response = Response.new(nil, {})
         response.status = "error"
         raise e
       ensure

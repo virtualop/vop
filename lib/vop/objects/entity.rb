@@ -66,9 +66,22 @@ module Vop
       end
     end
 
-    def to_s
-      "Vop::Entity (#{@type})"
+    def to_json
+      {
+          entity: @type,
+          key: @key,
+          data: @data
+      }.to_json()
     end
+
+    def self.from_json(op, json_data)
+      parsed = JSON.parse(json_data)
+      new(op, parsed["entity"], parsed["key"], parsed["data"])
+    end
+
+    # def to_s
+    #   "Vop::Entity (#{@type})"
+    # end
 
   end
 

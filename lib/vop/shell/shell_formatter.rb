@@ -80,16 +80,19 @@ module Vop
         end.join("\n")
       when :entity_list
         data.sort_by { |e| e.id }.map do |entity|
-          attributes = entity.data.sort_by do |x|
-
-          end.map do |key, value|
+          attributes = entity.data.map do |key, value|
             if key == entity.key
               nil
             else
               "#{key} : #{value}"
             end
-          end.compact.join("\n  ")
-          "[#{entity.type}] #{entity.id}\n  #{attributes}"
+          end.compact
+
+          output = "[#{entity.type}] #{entity.id}"
+          if attributes
+            output += attributes.join("\n")
+          end
+          output
         end.join("\n")
       when :entity
         entity = data

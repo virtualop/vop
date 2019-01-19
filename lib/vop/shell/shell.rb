@@ -78,7 +78,7 @@ module Vop
         @prompt = "#{@command.short_name}.#{@missing_params.first.name} ? "
       else
         begin
-          request = @op.prepare_request(@command.short_name, @arguments, @context)
+          request = @op.prepare_request(@command.short_name, @arguments, @context, @command.short_name)
           request.shell = self
           response = @op.execute_request(request)
 

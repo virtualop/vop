@@ -20,6 +20,7 @@ module Vop
 
       @current_filter = nil
       @filter_chain = @op.filter_chain.clone
+      # TODO not sure if this is really a hash out in the wild
       @origin = origin || {}
     end
 

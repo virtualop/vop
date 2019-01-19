@@ -121,6 +121,7 @@ module Vop
               list_command_name = entity.short_name.carefully_pluralize
               the_list = @op.execute(list_command_name, {})
               param = the_list.select { |x| x[entity.key] == param }.first
+              $logger.debug "auto-inflated #{name.to_s} entity : #{param}"
             end
           end
 

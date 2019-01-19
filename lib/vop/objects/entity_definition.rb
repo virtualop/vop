@@ -23,7 +23,7 @@ module Vop
 
       @on = nil
       @show_options = {}
-      @read_only = false # TODO true?
+      @read_only = true
     end
 
     def short_name
