@@ -90,7 +90,7 @@ module Vop
 
           output = "[#{entity.type}] #{entity.id}"
           if attributes
-            output += attributes.join("\n")
+            output += "\n" + attributes.join("\n")
           end
           output
         end.join("\n")
