@@ -15,6 +15,7 @@ module Vop
       end
 
       make_methods_for_commands
+      make_methods_for_data
       make_method_for_id
     end
 
@@ -56,6 +57,14 @@ module Vop
             ruby_args["block"] = block
           end
           @op.execute(command.short_name, ruby_args, { @type.to_s => id })
+        end
+      end
+    end
+
+    def make_methods_for_data
+      @data.each do |k,v|
+        self.class.send(:define_method, k) do |*args|
+          v
         end
       end
     end

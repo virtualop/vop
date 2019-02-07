@@ -34,6 +34,13 @@ module Vop
        )
     end
 
+    def to_json(options)
+      {
+        name: @name,
+        options: @options
+      }.to_json(options)
+    end
+
   end
 
 end
