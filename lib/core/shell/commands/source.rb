@@ -14,14 +14,14 @@ run do |name, numbers|
 
   result = []
   result << " "
-  code.lines.each_with_index { |line, idx|
+  code.lines.each_with_index do |line, idx|
     line.chomp!
     line = numbers ?
       "%02d %s" % [idx+1, line] :
       line
 
     result << line
-  }
+  end
   result << " "
   result.join("\n")
 end
