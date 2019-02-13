@@ -10,6 +10,7 @@ run do
 
     list_command = Command.new(plugin, definition.list_command_name)
     list_command.read_only = definition.read_only
+    list_command.dont_log = true
 
     if definition.on
       list_command.add_param(definition.on.to_s, mandatory: true)

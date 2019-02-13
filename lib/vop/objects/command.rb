@@ -13,7 +13,7 @@ module Vop
     attr_accessor :invalidation_block
 
     attr_accessor :show_options
-    attr_accessor :dont_register
+    attr_accessor :dont_register, :dont_log
     attr_accessor :read_only
     attr_accessor :allows_extra
 
@@ -29,6 +29,8 @@ module Vop
       @show_options = {}
 
       @dont_register = false
+      @dont_log = false
+
       @read_only = false
       @allows_extra = false
     end

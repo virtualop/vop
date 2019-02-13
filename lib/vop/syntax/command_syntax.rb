@@ -68,6 +68,10 @@ module Vop
       @command.allows_extra = true
     end
 
+    def dont_log
+      @command.dont_log = true
+    end
+
     def show(options = {})
       @command.show_options[:columns] = options.delete(:columns)
       @command.show_options[:display_type] = options.delete(:display_type)
