@@ -9,6 +9,7 @@ module Vop
     attr_reader :command_name, :param_values, :extra
     attr_accessor :shell
     attr_accessor :origin
+    attr_accessor :dont_log
 
     def initialize(op, command_name, param_values = {}, extra = {}, origin = nil)
       @op = op
@@ -22,6 +23,8 @@ module Vop
       @filter_chain = @op.filter_chain.clone
       # TODO not sure if this is really a hash out in the wild
       @origin = origin || {}
+
+      @dont_log = false
     end
 
     def command
