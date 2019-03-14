@@ -119,7 +119,15 @@ module Vop
 
             unless entity.nil?
               list_command_name = entity.short_name.carefully_pluralize
-              the_list = @op.execute(list_command_name, {})
+              list_command_params = {}
+              if entity.on
+                on_name = prepared[entity.on] || prepared[entity.on.to_s]
+                if on_name.nil?
+                  raise "missing parameter #{name.to_s} for stacked entity #{name}"
+                end
+                list_command_params[entity.on] = on_name
+              end
+              the_list = @op.execute(list_command_name, list_command_params)
               param = the_list.select { |x| x[entity.key] == param }.first
               $logger.debug "auto-inflated #{name.to_s} entity : #{param}"
             end
