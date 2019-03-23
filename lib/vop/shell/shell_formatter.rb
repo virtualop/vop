@@ -54,8 +54,13 @@ module Vop
         data.each do |row|
           values = [ ]
           columns_to_display.each do |key|
-            values << (row[key.to_s] || row[key.to_sym])
-          end
+            potential_value = row[key.to_s] || row[key.to_sym]
+            if potential_value.nil?
+              $logger.warn "column '#{key}' not found in result data"
+            else
+              values << (potential_value)
+            end
+          end unless row.nil?
           rearranged << values
         end
 
