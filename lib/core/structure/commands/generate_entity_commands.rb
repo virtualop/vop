@@ -18,7 +18,7 @@ run do
 
     list_command.block = lambda do |params, request, context, plugin|
       ex = Executor.new(@op)
-      block_param_names = definition.block.parameters.map { |x| x.last }
+      block_param_names = definition.block.parameters.map { |x| x.last }      
       payload = ex.prepare_payload(request, context, block_param_names)
 
       hash_array = definition.block.call(*payload)
@@ -35,7 +35,7 @@ run do
             raise "entity '#{definition.name}' returned unexpected data type : found #{first.class}, expected Hash"
           end
           entity_array = hash_array.map do |row|
-            Entity.new(@op, definition.short_name, definition.key, row)
+            Entity.new(@op, definition, row)
           end
         end
 

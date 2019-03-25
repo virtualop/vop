@@ -4,10 +4,11 @@ module Vop
 
     attr_reader :type, :data, :key
 
-    def initialize(op, type, key, data)
+    def initialize(op, definition, data)
       @op = op
-      @type = type
-      @key = key
+      @type = definition.short_name
+      @key = definition.key
+      @definition = definition
       @data = data
 
       unless @data.has_key? @key
@@ -56,7 +57,15 @@ module Vop
           if block
             ruby_args["block"] = block
           end
-          @op.execute(command.short_name, ruby_args, { @type.to_s => id })
+          extra = { @type.to_s => id }
+          if @definition.on
+            if @data[@definition.on.to_s]
+              extra[@definition.on.to_s] = @data[@definition.on.to_s]
+            else
+              $logger.warn "entity #{id} does not seem to have data with key #{@definition.on}, though that's required through the 'on' keyword"
+            end
+          end
+          @op.execute(command.short_name, ruby_args, extra)
         end
       end
     end
@@ -85,7 +94,9 @@ module Vop
 
     def self.from_json(op, json_data)
       parsed = JSON.parse(json_data)
-      new(op, parsed["entity"], parsed["key"], parsed["data"])
+      entity_name = parsed["entity"]
+      definition = op.entities[entity_name]
+      new(op, definition, parsed["data"])
     end
 
     # def to_s

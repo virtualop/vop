@@ -62,10 +62,6 @@ RSpec.describe Vop::Shell do
   end
 
   it "executes commands like a REPL" do
-
-    # PTY.spawn('') do |output, input|
-    #   output.readpartial 1024 # read past the prompt
-    # end
     $logger.info "shell_spec"
     Vop::Shell.run(nil, 'list_plugins')
   end

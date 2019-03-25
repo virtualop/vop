@@ -1,3 +1,4 @@
 run do
-  Entity.new(@op, "thing", "name", {"name" => "foo"})
+  thing = OpenStruct.new(short_name: "thing", key: "name")
+  Entity.new(@op, thing, {"name" => "foo"})
 end

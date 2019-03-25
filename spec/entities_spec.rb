@@ -4,20 +4,21 @@ RSpec.describe Vop do
 
   before(:example) do
     @vop = test_vop("entities")
+    @thing = OpenStruct.new(short_name: "thing", key: "number")
   end
 
   it "can create entities" do
-    entity = Vop::Entity.new(@vop, "thing", "number", {"number" => 42})
+    entity = Vop::Entity.new(@vop, @thing, {"number" => 42})
   end
 
-  it "is not possible to create an entity without a key" do
+  it "can not create an entity without a key" do
     expect {
-      Vop::Entity.new(@vop, "thing", "number", {})
+      Vop::Entity.new(@vop, @thing, {})
     }.to raise_error(/key.+not found/)
   end
 
   it "exposes an id, and a method named as the key" do
-    entity = Vop::Entity.new(@vop, "thing", "number", {"number" => 42})
+    entity = Vop::Entity.new(@vop, @thing, {"number" => 42})
     expect(entity.id).to be 42
     expect(entity.number).to be 42
     expect { puts "entity name : #{entity.name}" }.to raise_error(/undefined method/)

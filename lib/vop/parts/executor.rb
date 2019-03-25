@@ -123,13 +123,19 @@ module Vop
               if entity.on
                 on_name = prepared[entity.on] || prepared[entity.on.to_s]
                 if on_name.nil?
-                  raise "missing parameter #{name.to_s} for stacked entity #{name}"
+                  raise "missing parameter #{entity.on} for stacked entity #{name}"
+                else
+                  list_command_params[entity.on] = on_name
                 end
-                list_command_params[entity.on] = on_name
               end
               the_list = @op.execute(list_command_name, list_command_params)
-              param = the_list.select { |x| x[entity.key] == param }.first
-              $logger.debug "auto-inflated #{name.to_s} entity : #{param}"
+              inflated = the_list.select { |x| x[entity.key] == param }.first
+              if inflated.nil?
+                $logger.warn "problem auto-inflating entity with key #{param}"
+              else
+                $logger.debug "auto-inflated #{name.to_s} entity : #{inflated}"
+                param = inflated
+              end
             end
           end
 

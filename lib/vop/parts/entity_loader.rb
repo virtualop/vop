@@ -13,8 +13,6 @@ module Vop
 
       @plugin.inject_helpers(self)
 
-      #@command = @entity
-      #extend CommandSyntax
       extend EntitySyntax
     end
 
