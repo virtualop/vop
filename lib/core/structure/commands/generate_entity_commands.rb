@@ -18,7 +18,7 @@ run do
 
     list_command.block = lambda do |params, request, context, plugin|
       ex = Executor.new(@op)
-      block_param_names = definition.block.parameters.map { |x| x.last }      
+      block_param_names = definition.block.parameters.map { |x| x.last }
       payload = ex.prepare_payload(request, context, block_param_names)
 
       hash_array = definition.block.call(*payload)
