@@ -2,6 +2,10 @@ module Vop
 
   module EntitySyntax
 
+    def description(s)
+      @entity.description = s
+    end
+
     def key(key)
       @entity.key = key
     end

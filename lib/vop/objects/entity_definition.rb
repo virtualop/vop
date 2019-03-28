@@ -3,6 +3,7 @@ module Vop
   class EntityDefinition
 
     attr_reader :plugin, :name
+    attr_accessor :description
 
     attr_accessor :key
     attr_accessor :block
