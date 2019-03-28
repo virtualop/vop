@@ -129,11 +129,23 @@ module Vop
                 end
               end
               the_list = @op.execute(list_command_name, list_command_params)
-              inflated = the_list.select { |x| x[entity.key] == param }.first
-              if inflated.nil?
-                $logger.warn "problem auto-inflating entity with key #{param}"
+
+              # param might be :multi, autobox if necessary
+              autobox = ! command_param.options[:multi] && ! param.is_a?(Array)
+              inflatables = autobox ? [ param ] : param
+              inflated = []
+              inflatables.each do |inflatable|
+                i = the_list.select { |x| x[entity.key] == inflatable }.first
+                if i.nil?
+                  $logger.warn "problem auto-inflating entity with key #{p}"
+                else
+                  $logger.debug "auto-inflated #{name.to_s} entity : #{i}"
+                  inflated << i
+                end
+              end
+              if autobox
+                param = inflated.first
               else
-                $logger.debug "auto-inflated #{name.to_s} entity : #{inflated}"
                 param = inflated
               end
             end
