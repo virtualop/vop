@@ -84,12 +84,12 @@ module Vop
       end
     end
 
-    def to_json
+    def to_json(options = nil)
       {
           entity: @type,
           key: @key,
           data: @data
-      }.to_json()
+      }.to_json(options)
     end
 
     def self.from_json(op, json_data)
@@ -99,9 +99,9 @@ module Vop
       new(op, definition, parsed["data"])
     end
 
-    # def to_s
-    #   "Vop::Entity (#{@type})"
-    # end
+    def to_s
+      "Vop::Entity (#{@type})"
+    end
 
   end
 
