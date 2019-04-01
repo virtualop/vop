@@ -84,21 +84,29 @@ module Vop
           "#{k} : #{v}"
         end.join("\n")
       when :entity_list
-        data.sort_by { |e| e.id }.map do |entity|
-          attributes = entity.data.map do |key, value|
-            if key == entity.key
-              nil
-            else
-              "#{key} : #{value}"
-            end
-          end.compact
+        sorted = data.sort_by { |e| e.id }
 
-          output = "[#{entity.type}] #{entity.id}"
-          if attributes
-            output += "\n" + attributes.join("\n")
+        blacklisted_keys = %w|name params plugin_name|
+        all_keys = sorted.map { |x| x.data.keys }.flatten.uniq
+        columns = all_keys.delete_if { |x| blacklisted_keys.include? x }
+
+        headers = [ sorted.first.key ] + columns
+
+        rows = sorted.map do |entity|
+          row = [ entity.id ]
+
+          columns.each do |column|
+            value = entity.data[column] || ""
+            row << (value.respond_to?(to_s) ? value.to_s[0..49] : value)
           end
-          output
-        end.join("\n")
+
+          row
+        end
+
+        Terminal::Table.new(
+          rows: rows,
+          headings: headers
+        )
       when :entity
         entity = data
         "[#{entity.type}] #{entity.id}"
