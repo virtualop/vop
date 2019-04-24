@@ -57,8 +57,15 @@ module Vop
       end
     end
 
-    def mandatory_params
+    def mandatory_params(values = {})
       params_with { |x| x.options[:mandatory] == true }
+    end
+
+    def missing_mandatory_params(values = {})
+      mandatory_params.select do |param|
+        ! values.keys.include?(param.name.to_sym) &&
+        ! values.keys.include?(param.name.to_s)
+      end
     end
 
     # The default param is the one used when a command is called with a single "scalar" param only, like
@@ -66,14 +73,14 @@ module Vop
     # If a parameter is marked as default, it will be assigned the value "zaphod" in this case.
     # If there is only a single param, it is the default param by default
     # Also, if there is only one mandatory param, it is considered to be the default param
-    def default_param
+    def default_param(values = {})
       if params.size == 1
         params.first
       else
         result = params_with { |x| x.options[:default_param] == true }.first
         if result.nil?
-          mandatory = mandatory_params
-          if mandatory_params.size == 1
+          mandatory = missing_mandatory_params(values)
+          if mandatory.size == 1
             result = mandatory.first
           end
         end

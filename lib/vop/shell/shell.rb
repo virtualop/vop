@@ -1,4 +1,3 @@
-require "readline"
 require_relative "shell_formatter"
 require_relative "shell_input"
 require_relative "shell_input_readline"
@@ -15,7 +14,7 @@ module Vop
 
       @formatter = ShellFormatter.new
 
-      # for testing
+      # override for testing
       if input.nil?
         input = ShellInputReadline.new(method(:tab_completion))
       end
@@ -71,9 +70,6 @@ module Vop
 
       if missing_mandatory_params.size > 0
         $logger.debug "missing params : #{missing_mandatory_params.map(&:name)}"
-      end
-
-      if missing_mandatory_params.size > 0
         @missing_params = missing_mandatory_params
         @prompt = "#{@command.short_name}.#{@missing_params.first.name} ? "
       else
@@ -103,21 +99,20 @@ module Vop
     end
 
     def parse_command_line(args)
-      result = {}
+      @arguments = {}
       unless args.empty?
         args.each do |token|
           if token.include? "="
             (key, value) = token.split("=")
-            result[key] = value
+            @arguments[key] = value
           else
-            default_param = @command.default_param
+            default_param = @command.default_param(mix_arguments_and_context)
             if default_param
-              result[default_param.name] = args
+              @arguments[default_param.name] = args
             end
           end
         end
       end
-      result
     end
 
     def parse_and_execute(command_line)
@@ -156,7 +151,7 @@ module Vop
             known_commands = @op.commands.keys
             if known_commands.include? command
               @command = @op.commands[command]
-              @arguments = parse_command_line(args)
+              parse_command_line(args)
 
               maybe_execute
             else
@@ -196,16 +191,12 @@ module Vop
     end
 
     def do_it(command_line = nil)
-      #Readline.completion_append_character = ""
-      #Readline.completion_proc = method(:tab_completion)
-
       if command_line
         parse_and_execute(command_line)
       else
         while line = @input.read(@prompt)
-        #while line = Readline.readline(@prompt, true)
           if @command
-            # if a command has already been selected, we ask for missing params
+            # if a command has already been selected, ask for missing params
             accept_param(line)
           else
             # otherwise input is treated as regular command line (command + args)

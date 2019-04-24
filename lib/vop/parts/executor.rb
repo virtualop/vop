@@ -17,7 +17,7 @@ module Vop
         else
           # if there is a default param, it can be passed to execute as "scalar"
           # param, but it will be converted into a "normal" named param
-          dp = request.command.default_param
+          dp = request.command.default_param(request.extra)
           if dp
             result = {
               dp.name => ruby_args
