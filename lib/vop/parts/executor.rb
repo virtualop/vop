@@ -137,7 +137,7 @@ module Vop
               inflatables.each do |inflatable|
                 i = the_list.select { |x| x[entity.key] == inflatable }.first
                 if i.nil?
-                  $logger.warn "problem auto-inflating entity with key #{p}"
+                  $logger.warn "problem auto-inflating entity with key #{inflatable}"
                 else
                   $logger.debug "auto-inflated #{name.to_s} entity : #{i}"
                   inflated << i
