@@ -92,7 +92,7 @@ module Vop
         end
       end
 
-      # for distribution packages (?)
+      # for distribution packages
       result << "/usr/lib/vop-plugins"
 
       # an extra path might have been passed in the options
