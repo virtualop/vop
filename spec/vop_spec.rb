@@ -75,7 +75,6 @@ RSpec.describe Vop do
 
   it "can write config and read it again" do
     Dir.mktmpdir("vop_config_write_test_#{Time.now.to_i}") do |tmpdir|
-      #tmp = Tempfile.new("vop_config_write_test_#{Time.now.to_i}")
       vop = test_vop(nil, config_path: tmpdir)
 
       meta = vop.plugin("meta")
@@ -146,6 +145,24 @@ RSpec.describe Vop do
     expect {
       Vop::CommandParam.new("foo", [])
     }.to raise_error /sanity check failed/
+  end
+
+  it "has a worker process that will execute requests asynchronously" do
+    worker = Vop::AsyncExecutorWorker.new
+    request = Vop::Request.new(@vop, "list_commands")
+    worker.perform(request.to_json)
+  end
+
+  it "handles/ignores errors thrown in a worker process" do
+    worker = Vop::AsyncExecutorWorker.new
+    vop = test_vop("fail")
+    request = Vop::Request.new(vop, "fail")
+    worker.perform(request.to_json)
+  end
+
+  it "executes requests asynchronously" do
+    request = Vop::Request.new(@vop, "list_commands")
+    @vop.execute_async(request)
   end
 
 end

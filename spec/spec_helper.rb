@@ -29,8 +29,13 @@ def test_spec_path(sub_tree)
 end
 
 def test_vop(sub_tree = nil, options = {})
+  # set all possible env variables to satisfy coverage
+  ENV["VOP_DEV_MODE"] = "yup"
+  ENV["VOP_ORIGIN"] = "rspec"
+
   unless sub_tree.nil?
     options[:plugin_path] = test_spec_path(sub_tree)
   end
+
   Vop.setup(options)
 end

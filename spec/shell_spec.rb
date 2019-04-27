@@ -52,8 +52,8 @@ RSpec.describe Vop::Shell do
     # lines 0 and 2 are decoration
     header = formatted[1]
     first_line = formatted[3]
-    puts "header : #{header}"
-    puts "first line : #{first_line}"
+    # puts "header : #{header}"
+    # puts "first line : #{first_line}"
 
     header_fields = header.split("|").map(&:strip).select { |x| x != '#' && x != '' }
     columns = first_line.split("|").map(&:strip).select { |x| x.to_s != '' }
@@ -68,6 +68,13 @@ RSpec.describe Vop::Shell do
 
   it "passes on arguments" do
     Vop::Shell.run(nil, 'list_contributors machine')
+  end
+
+  it "warns about abusing the abstract base shell" do
+    input = Vop::ShellInput.new(nil)
+    expect {
+      input.read(">>")
+    }.to raise_error(/not implemented in abstract base class/)
   end
 
   it "auto-detects Hash display type" do
@@ -88,6 +95,18 @@ RSpec.describe Vop::Shell do
 
   it "detects single entities" do
     expect(display_type("entity")).to eql(:entity)
+  end
+
+  it "display single entities" do
+    output = shell("entity")
+    expect(output).to_not be nil
+    expect(output).to include("[thing]")
+    expect(output).to include("foo")
+  end
+
+  it "formats entity lists" do
+    header_fields, columns = parse_table("some_entities")
+    expect(header_fields).to eql(["name", "size"])
   end
 
   it "defaults to displaying raw values" do
@@ -147,6 +166,12 @@ RSpec.describe Vop::Shell do
       @shell.parse_and_execute("list_plugins?")
     end
     expect(output).to include("syntax")
+  end
+
+  it "shows source when a commnd ends in two question marks" do
+    output = shell("source??")
+    expect(output).to_not be nil
+    expect(output).to include("each_with_index")
   end
 
   it "does not crash on unknown commands" do

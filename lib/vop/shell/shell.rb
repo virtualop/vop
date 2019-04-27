@@ -91,11 +91,13 @@ module Vop
     end
 
     def accept_param(line)
-      current_param = @missing_params.shift
-      $logger.debug "value for param #{current_param.name} : #{line}"
-      @arguments[current_param.name] = line
+      unless line.nil?
+        current_param = @missing_params.shift
+        $logger.debug "value for param #{current_param.name} : #{line}"
+        @arguments[current_param.name] = line
 
-      maybe_execute
+        maybe_execute
+      end
     end
 
     def parse_command_line(args)
