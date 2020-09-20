@@ -31,11 +31,15 @@ run do
         entity_array = []
         unless hash_array.empty?
           first = hash_array.first
-          unless first.is_a? Hash
-            raise "entity '#{definition.name}' returned unexpected data type : found #{first.class}, expected Hash"
-          end
-          entity_array = hash_array.map do |row|
-            Entity.new(@op, definition, row)
+          if first.is_a? Entity
+            entity_array = hash_array
+          else
+            unless first.is_a? Hash
+              raise "entity '#{definition.name}' returned unexpected data type : found #{first.class}, expected Hash"
+            end
+            entity_array = hash_array.map do |row|
+              Entity.new(@op, definition, row)
+            end
           end
         end
 

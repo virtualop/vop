@@ -11,13 +11,11 @@ module Vop
     end
 
     def entity(options = { key: "name" }, &block)
-      if block
-        run(&block)
-      end
+      run(&block)
     end
 
     def run(&block)
-      @entity.block = block
+      @entity.block = block if block
     end
 
     def on(other_entity)
@@ -36,6 +34,15 @@ module Vop
 
     def invalidate(&block)
       @entity.invalidation_block = block
+    end
+
+    def contribute(options, &block)
+      raise "missing option 'to'" unless options.has_key?(:to)
+      @op.register_contributor(
+        command_name: options[:to],
+        contributor: @entity.name.to_s.carefully_pluralize
+      )
+      run(&block)
     end
 
   end

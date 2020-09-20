@@ -2,21 +2,12 @@ module Vop
 
   module CommandSyntax
 
-    def run(&block)
-      @command.block = block
-    end
-
     def description(s)
       @command.description = s
     end
 
-    def resolve_options_string(options)
-      if options.is_a? String
-        options = {
-          description: options
-        }
-      end
-      options
+    def run(&block)
+      @command.block = block
     end
 
     def param(name, options = {}, more_options = {})
@@ -90,6 +81,17 @@ module Vop
 
     def invalidate(&block)
       @command.invalidation_block = block
+    end
+
+    private
+
+    def resolve_options_string(options)
+      if options.is_a? String
+        options = {
+          description: options
+        }
+      end
+      options
     end
 
   end
