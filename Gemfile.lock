@@ -27,7 +27,7 @@ GEM
       validation (~> 0.1)
     password_generator (0.1.1)
       optionalargument (~> 0.3)
-    rack (2.2.2)
+    rack (2.2.3)
     rack-protection (2.0.8.1)
       rack
     rake (10.5.0)
