@@ -7,6 +7,7 @@ module Vop
   class Shell
 
     attr_reader :context
+    attr_reader :last_response
 
     def initialize(op, input = nil)
       @op = op
@@ -78,6 +79,12 @@ module Vop
           request.shell = self
           response = @op.execute_request(request)
 
+          # log the last response for the "detail" command
+          unless @command.short_name == "detail"
+            @last_response = response
+          end
+
+          # mix context changes from the response into the local context
           @context.merge! response.context
 
           display_type = @formatter.analyze(request, response)

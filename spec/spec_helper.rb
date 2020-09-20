@@ -1,6 +1,8 @@
 require "simplecov"
 SimpleCov.start do
   add_filter "spec/"
+  # this is the part that is extracted because it is not testable
+  add_filter "lib/vop/shell/shell_input_readline.rb"
 end
 
 require "bundler/setup"

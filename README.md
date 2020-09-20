@@ -1,24 +1,20 @@
+The vop is a scripting framework.
 
+It organizes ruby scripts as *commands* living in *plugins*, defines and manages *services*, and can be accessed from the command line or a web interface.
 
-The vop is a systems automation scripting framework.
+## Status : Alpha
 
-It organizes (ruby) scripts into commands living in plugins, defines services that can be installed and managed, and comes with a shell and a web interface.
-
-# Status: WIP
-
-This is work in progress. Do not assume everything you read to be totally accurate and/or stable.
+This is work in progress. Do not assume everything you read to be totally accurate, stable or final.
 
 # Installation
 
 ## as a gem:
 
-    $ gem install vop
+  $ gem install vop
 
 # Usage
 
 Call `vop` to start the shell.
-
-Use the tab key for completion, type "help" for more info, `list_plugins` and `list_commands` for an overview.
 
 # Syntax
 
@@ -48,6 +44,19 @@ end
 hook :after_execute do |payload|
   request = payload[:request]
   response = payload[:response]
+end
+```
+
+config:
+```
+config_param "foo" [, { options }]
+config_param! "snafoo" [, { options }]
+```
+
+accessing plugin config inside command:
+```
+run do |plugin|
+  plugin.config["foo"]
 end
 ```
 
@@ -130,6 +139,14 @@ contribute to: "other_command" do |params|
 end
 ```
 
+collect contributions:
+```
+@op.collect_contributions(
+  command_name: "other_command",
+  raw_params: {}
+)
+```
+
 
 show (display options for shell output):
 ```
@@ -157,7 +174,18 @@ deploy package: <foo>
 deploy package: [ <foo>, <bar>, <baz> ]
 ```
 
-install (configuration for) a package repository:
+install a virtualop service:
+```
+deploy service: "plugin.service"
+```
+
+deploy configuration from a template:
+```
+deploy template: "foo.conf.erb",
+  to: "/etc/foo/conf.d/foo.conf"
+```
+
+install (configuration for) a debian package repository:
 ```
 deploy repository: {
   alias: "funny-name",
@@ -173,6 +201,58 @@ deploy do |machine|
 
 
 end
+```
+
+## Entities
+
+Each entity is a file in the `/entities` subfolder of a plugin.
+
+A minimal entity is an array of hashes, each with a unique "name" attribute:
+
+```
+entity do
+  [
+    {
+      "name" => "foo"
+    }
+  ]
+end
+```
+
+Instead of "name", a differing key attribute can be specified with `key`:
+```
+key "path"
+
+entity do
+  [
+    {
+      "path" => "/bin/false"
+    }
+  ]
+end
+```
+
+The `on` keyword allows to stack entities onto another, e.g. the `log` entity living on a machine:
+```
+key "path"
+
+on :machine
+
+entity do |machine|
+  # ...
+end
+```
+A stacked entity (or rather, the list command generated from the entity) automatically has a parameter for the entity it is stacked on - in the log example:
+```
+>> logs?
+
+logs
+
+syntax:
+  logs <machine>
+
+parameters:
+  machine
 ```
 
 # Development
