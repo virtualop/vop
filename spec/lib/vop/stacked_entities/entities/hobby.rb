@@ -9,5 +9,5 @@ entity do |params, user|
       result << { "name" => "Gardening" }
       result << { "name" => "Rock climbing" }
     end
-  end  
+  end
 end
