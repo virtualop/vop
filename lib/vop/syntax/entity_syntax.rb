@@ -28,8 +28,8 @@ module Vop
 
       raise "unknown keyword #{options.keys.first}" if options.keys.length > 0
 
-      @entity.show_options[:columns] = column_options
-      @entity.show_options[:display_type] = display_type
+      @entity.show_options[:columns] = column_options if column_options
+      @entity.show_options[:display_type] = display_type if display_type
     end
 
     def invalidate(&block)

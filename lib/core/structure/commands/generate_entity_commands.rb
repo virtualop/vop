@@ -11,14 +11,16 @@ run do
     list_command = Command.new(plugin, definition.list_command_name)
     list_command.read_only = definition.read_only
     list_command.dont_log = true
+    list_command.show_options = definition.show_options
 
     if definition.on
-      list_command.add_param(definition.on.to_s, mandatory: true)
+      list_command.add_param(definition.on.to_s, mandatory: true, entity: true)
     end
 
     list_command.block = lambda do |params, request, context, plugin|
       ex = Executor.new(@op)
       block_param_names = definition.block.parameters.map { |x| x.last }
+
       payload = ex.prepare_payload(request, context, block_param_names)
 
       hash_array = definition.block.call(*payload)

@@ -1,24 +1,27 @@
 require "spec_helper"
+require "byebug"
 
 RSpec.describe Vop do
 
   before(:example) do
-    @vop = test_vop("entities")
-    @thing = OpenStruct.new(short_name: "thing", key: "number")
+    @vop = test_vop("entities", { log_level: Logger::INFO })
+    @unnamed = @vop.entities["unnamed"]
   end
 
   it "can create entities" do
-    entity = Vop::Entity.new(@vop, @thing, {"number" => 42})
+    entity = Vop::Entity.new(@vop, @unnamed, {"number" => 123})
   end
 
   it "can not create an entity without a key" do
     expect {
-      Vop::Entity.new(@vop, @thing, {})
+      Vop::Entity.new(@vop, @unnamed, {})
     }.to raise_error(/key.+not found/)
   end
 
   it "exposes an id, and a method named as the key" do
-    entity = Vop::Entity.new(@vop, @thing, {"number" => 42})
+    expect(@unnamed.key).to eq "number"
+    expect(@vop.unnameds.size).to be 1
+    entity =  @vop.unnameds!.first
     expect(entity.id).to be 42
     expect(entity.number).to be 42
     expect { puts "entity name : #{entity.name}" }.to raise_error(/undefined method/)

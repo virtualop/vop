@@ -22,12 +22,16 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "json", "~> 2.3"
   spec.add_dependency "net-ssh"
+  spec.add_dependency "ed25519"
+  spec.add_dependency "bcrypt_pbkdf"
   spec.add_dependency "net-scp"
   spec.add_dependency "redis"
   spec.add_dependency "sidekiq", "~> 6.1.2"
   spec.add_dependency "terminal-table"
+  spec.add_dependency "vault"
   spec.add_dependency "xml-simple"
-  spec.add_dependency "password_generator"
+  spec.add_dependency "passgen"
+  spec.add_dependency "byebug"
 
   spec.add_development_dependency "rspec", "~> 3.0"
   spec.add_development_dependency "simplecov", "~> 0.19.0"

@@ -49,7 +49,7 @@ module Vop
     def make_methods_for_commands
       entity_commands.each do |command|
         # TODO this is very similar to code in Vop.<<
-        self.class.send(:define_method, command.short_name) do |*args, &block|
+        define_singleton_method command.short_name.to_sym do |*args, &block|
           $logger.debug "[#{@type}:#{id}] #{command.short_name} (#{args.pretty_inspect}, block? #{block_given?})"
           ruby_args = args.length > 0 ? args[0] : {}
           # TODO we might want to do this only if there's a block param defined
@@ -72,23 +72,23 @@ module Vop
 
     def make_methods_for_data
       @data.each do |k,v|
-        self.class.send(:define_method, k) do |*args|
+        define_singleton_method k.to_sym do |*args|
           v
         end
       end
     end
 
     def make_method_for_id
-      self.class.send(:define_method, @key) do |*args|
+      define_singleton_method @key.to_sym do |*args|
         id
       end
     end
 
     def to_json(options = nil)
       {
-          entity: @type,
-          key: @key,
-          data: @data
+          entity: type,
+          key: key,
+          data: data
       }.to_json(options)
     end
 

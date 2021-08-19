@@ -35,10 +35,11 @@ module Vop
       command = request.command
       show_options = command.show_options
 
-      result = case display_type
+      case display_type
       when :table
         columns_to_display =
           if show_options[:columns]
+            # TODO validate all columns exist?
             show_options[:columns]
           else
             # TODO this is not optimal - what if the second row has more keys than the first?
@@ -55,11 +56,7 @@ module Vop
           values = [ ]
           columns_to_display.each do |key|
             potential_value = row[key.to_s] || row[key.to_sym]
-            if potential_value.nil?
-              $logger.warn "column '#{key}' not found in result data"
-            else
-              values << (potential_value)
-            end
+            values << potential_value
           end unless row.nil?
           rearranged << values
         end
@@ -86,9 +83,13 @@ module Vop
       when :entity_list
         sorted = data.sort_by { |e| e.id }
 
-        blacklisted_keys = %w|name params plugin_name|
-        all_keys = sorted.map { |x| x.data.keys }.flatten.uniq
-        columns = all_keys.delete_if { |x| blacklisted_keys.include? x }
+        columns = if show_options[:columns]
+          show_options[:columns]
+        else
+          blacklisted_keys = %w|name params plugin_name|
+          all_keys = sorted.map { |x| x.data.keys }.flatten.uniq
+          all_keys.delete_if { |x| blacklisted_keys.include? x }
+        end
 
         headers = [ sorted.first.key ] + columns
 
@@ -117,8 +118,6 @@ module Vop
       else
         raise "unknown display type #{display_type}"
       end
-
-      result
     end
 
   end

@@ -1,6 +1,6 @@
 param! "name",
   description: "a command for which help should be displayed",
-  lookup: lambda { |params| @op.list_commands.split }
+  lookup: lambda { |params| @op.list_commands }
 
 run do |params, name|
   command = @op.commands[params["name"]]
