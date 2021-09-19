@@ -26,6 +26,21 @@ module Vop
       @options = defaults.merge(options)
     end
 
+    def lookup(current_values = {})
+      begin
+        lookup_block = options[:lookup]
+
+        # the lookup block might want the previously collected params as input
+        lookups = if lookup_block.arity > 0
+          lookup_block.call(current_values)
+        else
+          lookup_block.call()
+        end
+      rescue => detail
+        $logger.error "problem loading lookup values for #{name} : #{detail.message}"
+      end
+    end
+
     # some params do not want to prefilled from the context
     def wants_context
       !(

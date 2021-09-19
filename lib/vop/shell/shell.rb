@@ -50,27 +50,29 @@ module Vop
       end
     end
 
-    def mix_arguments_and_context
-      result = @arguments
+    def mix_arguments_and_context(command = nil, arguments = nil)
+      result = arguments || @arguments
       @context.each do |k,v|
-        param = @command.param(k)
-        if param && param.wants_context
-          result[k] = @context[k]
+        cmd = command || @command
+        if cmd
+          param = (cmd).param(k)
+          if param && param.wants_context
+            result[k] = @context[k]
+          end
         end
       end
       result
     end
 
-    def maybe_execute
-      mandatory = @command.mandatory_params
-
-      missing_mandatory_params = @command.mandatory_params.delete_if do |param|
-        @arguments.keys.include?(param.name) ||
+    def missing_mandatory_params(command = @command, arguments = @arguments)
+      command.mandatory_params.delete_if do |param|
+        arguments.keys.include?(param.name) ||
         (@context.keys.include?(param.name) && param.wants_context)
       end
+    end
 
+    def maybe_execute
       if missing_mandatory_params.size > 0
-        $logger.debug "missing params : #{missing_mandatory_params.map(&:name)}"
         @missing_params = missing_mandatory_params
         @prompt = "#{@command.short_name}.#{@missing_params.first.name} ? "
       else
@@ -107,61 +109,83 @@ module Vop
       end
     end
 
-    def parse_command_line(args)
-      @arguments = {}
-      unless args.empty?
-        args.each do |token|
-          if token.include? "="
-            (key, value) = token.split("=")
-            @arguments[key] = value
-          else
-            default_param = @command.default_param(mix_arguments_and_context)
-            if default_param
-              @arguments[default_param.name] = args
+    def is_special?(command)
+      command.start_with?('$') || command.start_with?('@') || command.end_with?('?')
+    end
+
+    def handle_special(command)
+      if command.start_with?('$')
+        if command.start_with?('$vop')
+          puts "executing #{command}"
+          puts eval command
+        else
+          puts "unknown $-command #{command} - try '$vop' maybe?"
+        end
+      elsif command.start_with?('@')
+        if command.start_with?('@op')
+          puts "executing #{command}"
+          puts eval command
+        else
+          puts "unknown @-command #{command} - try '@op' maybe?"
+        end
+      end
+    end
+
+    def parse(command_line)
+      (command, *args) = command_line.split
+
+      arguments = {}
+      if command
+        $logger.debug "command : #{command}, args : #{args}"
+
+        if command.end_with?("??")
+          target_command = command[0..-3]
+          command = "source"
+          arguments["name"] = target_command
+        elsif command.end_with?("?")
+          target_command = command[0..-2]
+          command = "help"
+          arguments["name"] = target_command
+        end
+
+        known_commands = @op.commands.keys
+        if known_commands.include? command
+          cmd = @op.commands[command]
+
+          unless args.empty? || is_special?(command)
+            args.each do |token|
+              if token.include? "="
+                (key, value) = token.split("=")
+                arguments[key] = value
+              else
+                default_param = cmd.default_param(mix_arguments_and_context)
+                if default_param
+                  arguments[default_param.name] = args
+                end
+              end
             end
           end
+          [command, cmd, arguments]
+        else
+          [command, nil, arguments]
         end
       end
     end
 
     def parse_and_execute(command_line)
-      (command, *args) = command_line.split
+      command, cmd, arguments = parse(command_line)
 
       if command
-        $logger.debug "command : #{command}, args : #{args}"
-        if command.start_with?('$')
-          if command.start_with?('$vop')
-            puts "executing #{command}"
-            puts eval command
-          else
-            puts "unknown $-command #{command} - try '$vop' maybe?"
-          end
-        elsif command.start_with?('@')
-          if command.start_with?('@op')
-            puts "executing #{command}"
-            puts eval command
-          else
-            puts "unknown @-command #{command} - try '@op' maybe?"
-          end
+        $logger.debug "command : #{command}, args : #{arguments}"
+        if is_special?(command)
+          handle_special(command_line)
         else
-          if command.end_with?("??")
-            help_command = command[0..-3]
-            command = "source"
-            args << "name=#{help_command}"
-          elsif command.end_with?("?")
-            help_command = command[0..-2]
-            command = "help"
-            args << "name=#{help_command}"
-          end
-
           if command == "exit"
             @input.exit
           else
-            known_commands = @op.commands.keys
-            if known_commands.include? command
-              @command = @op.commands[command]
-              parse_command_line(args)
-
+            if cmd
+              @command = cmd
+              @arguments = arguments
               maybe_execute
             else
               puts "unknown command '#{command}'"
@@ -169,34 +193,53 @@ module Vop
           end
         end
       end
+    end
+
+    def complete_for_command(s)
+      current_param = @missing_params.first
+      if current_param && current_param.options.has_key?(:lookup)
+        begin
+          lookup_block = current_param.options[:lookup]
+
+          # the lookup block might want the previously collected params as input
+          lookups = if lookup_block&.arity > 0
+            params_for_lookup = mix_arguments_and_context
+            lookup_block.call(params_for_lookup)
+          else
+            lookup_block.call()
+          end
+          lookups.grep /^#{Regexp.escape(s)}/
+        rescue => detail
+          $logger.error "problem loading lookup values for #{current_param.name} : #{detail.message}"
+        end
+      end
+    end
+
+    def complete_command_line(s)
+      potential_command, potential_cmd, potential_args = parse(s)
+      #$logger.debug "? >>#{potential_cmd}<< (#{potential_args}) [#{Readline.line_buffer}]"
+      if potential_cmd
+        default_param = potential_cmd.default_param
+        if default_param
+          lookups = default_param.lookup(mix_arguments_and_context)
+          lookups
+            .grep(/^#{Regexp.escape(s.split.last)}/)
+            .map do |lookup|
+              "#{potential_command} #{lookup}"
+            end
+        end
+      else
+        lookups = @op.commands.keys.sort.grep /^#{Regexp.escape(s)}/
+      end
 
     end
 
     def tab_completion(s)
-      lookups = []
-
       if @command
-        current_param = @missing_params.first
-        if current_param && current_param.options.has_key?(:lookup)
-          begin
-            lookup_block = current_param.options[:lookup]
-
-            # the lookup block might want the previously collected params as input
-            lookups = if lookup_block.arity > 0
-              params_for_lookup = mix_arguments_and_context
-              lookup_block.call(params_for_lookup)
-            else
-              lookup_block.call()
-            end
-          rescue => detail
-            $logger.error "problem loading lookup values for #{current_param.name} : #{detail.message}"
-          end
-        end
+        complete_for_command(s)
       else
-        lookups = @op.commands.keys.sort
+        complete_command_line(s)
       end
-
-      lookups.grep /^#{Regexp.escape(s)}/
     end
 
     def do_it(command_line = nil)

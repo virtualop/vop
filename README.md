@@ -74,6 +74,8 @@ Also, you can use any of these:
 description "Roses are red."
 
 read_only   # => cacheable
+
+dont_log
 ```
 
 A command can define parameters

@@ -62,12 +62,14 @@ module Vop
       @config = {}
 
       # call_hook :preload ?
+
       load_helpers
       load_default_config
       load_config
 
       # TODO proceed only if auto_load
       call_hook :init
+
       load_entities
       load_commands
       load_filters

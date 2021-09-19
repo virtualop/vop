@@ -1,4 +1,5 @@
-param "plugin_filter", description: "name of a plugin by which commands should be filtered"
+param "plugin_filter", description: "name of a plugin by which commands should be filtered",
+  lookup: lambda { @op.list_plugins }
 
 run do |plugin_filter|
   result = @op.commands.values
