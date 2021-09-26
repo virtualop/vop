@@ -1,6 +1,12 @@
 #!/usr/bin/env ruby
 
 require "vop"
+begin
+  require "vop-plugins"
+rescue Exception => e
+  $stderr.puts "could not load plugins : #{e.message}"
+  raise
+end
 
 @op = Vop.boot(origin: "shell:#{Process.pid}@#{`hostname`.strip}")
 Vop::Shell.run(@op)

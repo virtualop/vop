@@ -63,7 +63,7 @@ RSpec.describe Vop do
   end
 
   it "can generate cache keys from requests" do
-    request = Vop::Request.new(@vop, "test_ssh", { machine: "localhost" }, {})
+    request = Vop::Request.new(@vop, "list_commands", { plugin_filter: "meta" }, {})
     expect(request.cache_key).to_not be nil
   end
 

@@ -47,6 +47,13 @@ module Vop
       "Vop::Plugin #{name}"
     end
 
+    def inspect
+      {
+        name: name,
+        path: @path
+      }.to_json()
+    end
+
     def init
       $logger.debug "plugin init : #{@name}"
 

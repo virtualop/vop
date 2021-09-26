@@ -27,6 +27,8 @@ module Vop
 
     attr_reader :finder, :loader, :sorter
 
+    @search_path = []
+
     def initialize(options = {})
       @options = {
         config_path: "/etc/vop",
@@ -79,30 +81,6 @@ module Vop
       File.join(lib_path, "core")
     end
 
-    def plugin_locations
-      result = []
-
-      # during development, we might find checkouts for "plugins" and "services"
-      # next to the core
-      vop_dir = Pathname.new(File.join(lib_path, "..", "..")).realpath
-      unless vop_dir.to_s.start_with? "/usr"
-        %w|plugins services|.each do |thing|
-          sibling_dir = File.join(vop_dir, thing)
-          result << sibling_dir
-        end
-      end
-
-      # for distribution packages
-      result << "/usr/lib/vop-plugins"
-
-      # an extra path might have been passed in the options
-      if @options.has_key? :plugin_path
-        result << @options[:plugin_path]
-      end
-
-      result
-    end
-
     def config_path
       @options[:config_path]
     end
@@ -131,8 +109,8 @@ module Vop
 
     def load
       load_from(core_location, { core: true })
-      load_from(plugin_locations)
-      load_from(search_path)
+      load_from(@options[:plugin_path]) if @options.has_key?(:plugin_path)
+      load_from(self.class.search_path)
 
       call_global_hook :loading_finished
 
@@ -227,6 +205,8 @@ module Vop
       AsyncExecutorWorker.perform_async(request.to_json)
     end
 
+    def self.search_path
+      @search_path
+    end
   end
-
 end

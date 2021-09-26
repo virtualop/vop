@@ -30,7 +30,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "terminal-table"
   spec.add_dependency "vault"
   spec.add_dependency "xml-simple"
-  spec.add_dependency "passgen"
   spec.add_dependency "byebug"
 
   spec.add_development_dependency "rspec", "~> 3.0"
