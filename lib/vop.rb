@@ -4,6 +4,13 @@ require_relative "vop/version"
 require_relative "vop/shell/shell"
 require_relative "vop/vop"
 
+begin
+  require "vop-plugins"
+rescue Exception => e
+  $stderr.puts "could not load plugins : #{e.message}"
+  raise
+end
+
 module Vop
 
   def self.setup(options = {})
