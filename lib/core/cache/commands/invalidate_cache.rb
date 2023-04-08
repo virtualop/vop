@@ -1,6 +1,9 @@
 param! "command"
 param! "raw_params", default: {}
 
-run do
-  # not doing anything, just to satisfy dependencies
+run do |params|
+  @op.collect_contributions(
+    command_name: "invalidate_cache",
+    raw_params: params
+  )
 end

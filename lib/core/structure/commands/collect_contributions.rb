@@ -38,7 +38,9 @@ run do |command_name, raw_params|
         if contribution.is_a? Array
           result += contribution
         else
-          $logger.warn "contribution from #{short_name} is not an Array (but a #{contribution.class}), though the :table display type would imply that (ignoring)"
+          if target.show_options[:display_type] == :table
+            $logger.warn "contribution from #{short_name} is not an Array (but a #{contribution.class}), though the :table display type would imply that (ignoring)"
+          end
         end
       when :hash
         result.merge! contribution

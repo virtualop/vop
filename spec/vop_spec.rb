@@ -4,7 +4,6 @@ require "tempfile"
 RSpec.describe Vop do
 
   before(:example) do
-    $logger.info "before vop_spec"
     @vop = test_vop
   end
 

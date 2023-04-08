@@ -28,7 +28,7 @@ module Vop
 
     def lookup(current_values = {})
       begin
-        lookup_block = options[:lookup]
+        return [] unless lookup_block = options[:lookup]
 
         # the lookup block might want the previously collected params as input
         lookups = if lookup_block.arity > 0

@@ -34,30 +34,38 @@ module Vop
       end
     end
 
+    def ancestor_names
+      # TODO : would be nice if this operation was transitive
+      @op.list_contribution_targets(source_command: @definition.name)
+    end
+
     # all commands that have a parameter with the same name as the entity
     # are considered eligible for this entity (TODO that's too broad, isn't it?)
     def entity_commands
-      result = @op.commands.values.select do |command|
-        command.params.select do |param|
-          param.name == @type
-        end.count > 0
-      end
-      @command_count = result.count
-      result
+      namified = ancestor_names.map { |x| x.carefully_singularize }
+      similar_names = [ @type.to_s ] + namified
+      # TODO [performance] this is probably expensive, move into definition time?
+      @op.commands.values.flat_map do |command|
+        similar_names.map do |similar_name|
+          # TODO we might also want to check if param.entity?
+          next unless command.params.any? { |param| param.name == similar_name }
+          [command.short_name, similar_name]
+        end.compact
+      end.to_h
     end
 
     def make_methods_for_commands
-      entity_commands.each do |command|
-        # TODO this is very similar to code in Vop.<<
-        define_singleton_method command.short_name.to_sym do |*args, &block|
-          $logger.debug "[#{@type}:#{id}] #{command.short_name} (#{args.pretty_inspect}, block? #{block_given?})"
+      entity_commands.each do |command_name, similar_name|
+        # TODO this used to be very similar to code in Vop.<<
+        define_singleton_method command_name.to_sym do |*args, &block|
+          $logger.debug "[#{@type}:#{id}] #{command_name} (#{args.pretty_inspect}, block? #{block_given?})"
           ruby_args = args.length > 0 ? args[0] : {}
           # TODO we might want to do this only if there's a block param defined
           # TODO this does not work if *args comes with a scalar default param
           if block
             ruby_args["block"] = block
           end
-          extra = { @type.to_s => id }
+          extra = { similar_name => id }
           if @definition.on
             if @data[@definition.on.to_s]
               extra[@definition.on.to_s] = @data[@definition.on.to_s]
@@ -65,7 +73,7 @@ module Vop
               $logger.warn "entity #{id} does not seem to have data with key #{@definition.on}, though that's required through the 'on' keyword"
             end
           end
-          @op.execute(command.short_name, ruby_args, extra)
+          @op.execute(command_name, ruby_args, extra)
         end
       end
     end

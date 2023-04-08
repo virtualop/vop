@@ -2,15 +2,17 @@ The vop is a scripting framework.
 
 It organizes ruby scripts as *commands* living in *plugins*, defines and manages *services*, and can be accessed from the command line or a web interface.
 
-## Status : Alpha
-
-This is work in progress. Do not assume everything you read to be totally accurate, stable or final.
-
 # Installation
 
 ## as a gem:
 
   $ gem install vop
+
+## from source
+
+* checkout the following repos from github.com/virtualop: vop, plugins, bundle
+* install Ruby >= 3.1.2
+* run `bundle install` in all working copies
 
 # Usage
 

@@ -8,7 +8,7 @@ begin
   require "vop-plugins"
 rescue Exception => e
   $stderr.puts "could not load plugins : #{e.message}"
-  raise
+  #raise
 end
 
 module Vop

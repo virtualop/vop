@@ -63,9 +63,6 @@ module Vop
     end
 
     def execute
-      result = nil
-      context = nil
-
       # build a chain out of all filters + the command itself
       filter_chain = @op.filter_chain.clone.map {
         |filter_name| @op.filters[filter_name.split(".").first]

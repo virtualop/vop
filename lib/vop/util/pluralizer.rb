@@ -19,6 +19,14 @@ module Vop
         end
       end
 
+      def carefully_singularize
+        begin
+          self.singularize
+        rescue
+          "#{self[0..-2]}"
+        end
+      end
+
     end
 
   end

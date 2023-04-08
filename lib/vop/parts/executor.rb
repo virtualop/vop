@@ -159,13 +159,13 @@ module Vop
     end
 
     def execute(request)
-      blacklist = %w|list_contributors collect_contributions machines rails_machines|
+      blacklist = %w|list_contributors list_contribution_targets collect_contributions machines rails_machines|
       unless blacklist.include? request.command.short_name
         $logger.debug "+++ #{request.command.short_name} (#{request.param_values}) +++"
       end
       command = request.command
 
-      context = {}
+      context = request.extra
       block_param_names = request.command.block.parameters.map { |x| x.last }
       payload = prepare_payload(request, context, block_param_names)
       result = command.execute(payload)
