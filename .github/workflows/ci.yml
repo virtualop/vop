@@ -4,15 +4,18 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
+      - and-tonic
   pull_request:
-    branches: [ master ]
+    branches: [ master, and-tonic ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     services:
+      # https://docs.github.com/en/actions/using-containerized-services/creating-redis-service-containers
       redis:
         image: redis
         # Set health checks to wait until redis has started
