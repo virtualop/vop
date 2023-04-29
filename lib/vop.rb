@@ -7,7 +7,7 @@ require_relative "vop/vop"
 begin
   require "vop-plugins"
 rescue Exception => e
-  $stderr.puts "could not load plugins : #{e.message}"
+  $stderr.puts "could not load plugins from gem : #{e.message}"
   #raise
 end
 
