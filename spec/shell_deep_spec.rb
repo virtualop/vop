@@ -51,6 +51,4 @@ RSpec.describe "shell in detail" do
 
     expect(@input.prompt).to eql ">> "
   end
-
-
 end

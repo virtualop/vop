@@ -12,6 +12,10 @@ RSpec.describe Vop do
     expect(@vop.entities["chainsaw"].description).to eq "fun toy to juggle with"
   end
 
+  it "has entities with show options" do
+    expect(@vop.entities["shoe"].show_options[:columns]).to eq ["name", "color"]
+  end
+
   it "can create entities" do
     entity = Vop::Entity.new(@vop, @unnamed, {"number" => 123})
   end
