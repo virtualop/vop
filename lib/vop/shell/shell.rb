@@ -243,7 +243,7 @@ module Vop
     end
 
     def do_it(command_line = nil)
-      if command_line
+      if command_line && command_line != ""
         parse_and_execute(command_line)
       else
         while line = @input.read(@prompt)
