@@ -28,7 +28,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "redis"
   spec.add_dependency "sidekiq"
   spec.add_dependency "terminal-table"
-  spec.add_dependency "vault"
   spec.add_dependency "xml-simple"
   spec.add_dependency "byebug"
 

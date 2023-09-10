@@ -26,6 +26,7 @@ module Vop
     attr_reader :filter_chain
 
     attr_reader :finder, :loader, :sorter
+    attr_reader :search_path
 
     @search_path = []
 
@@ -127,13 +128,14 @@ module Vop
           @plugins << stuff
         elsif stuff.is_a? EntityDefinition
           entity = stuff
+          # TODO : auto-merge entities with the same name from multiple plugins?
           @entities[entity.short_name] = stuff
         elsif stuff.is_a? Command
           command = stuff
           unless command.dont_register
             $logger.debug "registering #{command.name}"
             if @commands.keys.include? command.short_name
-              $logger.warn "overriding previous declaration of #{command.short_name}"
+              $logger.debug "overriding previous declaration of #{command.short_name}"
             end
             @commands[command.short_name] = stuff
 

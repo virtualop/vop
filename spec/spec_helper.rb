@@ -5,7 +5,7 @@ SimpleCov.start do
   add_filter "lib/vop/shell/shell_input_readline.rb"
 end
 
-require "bundler/setup"
+#require "bundler/setup"
 
 require "vop"
 
