@@ -25,6 +25,11 @@ RSpec.describe Vop do
     expect(@vop.list_plugins).to_not be nil
   end
 
+  it "knows how to get the source for a command" do
+    command = @vop.commands["source"]
+    expect(command.source).to_not be nil
+  end
+
   it "refuses to load invalid plugins" do
     expect {
       test_vop("invalid_plugin")
@@ -134,17 +139,13 @@ RSpec.describe Vop do
     expect(lookups).to eql ["foo","bar"]
   end
 
-  it "knows how to get the source for a command" do
-    command = @vop.commands["source"]
-    expect(command.source).to_not be nil
-  end
-
   it "checks that CommandParams are only initialized with Hash options" do
     expect(Vop::CommandParam.new("foo", {})).to_not be nil
     expect {
       Vop::CommandParam.new("foo", [])
     }.to raise_error /sanity check failed/
   end
+
 
   it "has a worker process that will execute requests asynchronously" do
     worker = Vop::AsyncExecutorWorker.new
@@ -162,6 +163,18 @@ RSpec.describe Vop do
   it "executes requests asynchronously" do
     request = Vop::Request.new(@vop, "list_commands")
     @vop.execute_async(request)
+  end
+
+
+  it "loads plugins from the search_path" do
+    Vop::Vop.search_path << test_spec_path("search_path")
+    expect(test_vop.list_plugins).to include "from_search_path"
+  end
+
+  it "loads plugins from search paths that have been added by a plugin" do
+    Vop::Vop.search_path << test_spec_path("search_path_recursive")
+    expect(test_vop.list_plugins).to include "foo"
+    expect(test_vop.list_plugins).to include "from_recursive_search_path"
   end
 
 end

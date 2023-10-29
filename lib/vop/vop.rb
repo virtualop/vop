@@ -27,6 +27,7 @@ module Vop
 
     attr_reader :finder, :loader, :sorter
     attr_reader :search_path
+    attr_reader :load_status
 
     @search_path = []
 
@@ -40,6 +41,8 @@ module Vop
       @finder = PluginFinder.new
       @loader = PluginLoader.new(self)
       @sorter = DependencyResolver.new(self)
+
+      @load_status = {}
 
       _reset
     end
@@ -108,10 +111,25 @@ module Vop
       $logger.debug plugins.loaded.map(&:name)
     end
 
+    def unloaded
+      self.class.search_path.reject { |path| @load_status.key? path }
+    end
+
     def load
       load_from(core_location, { core: true })
       load_from(@options[:plugin_path]) if @options.has_key?(:plugin_path)
-      load_from(self.class.search_path)
+
+      while unloaded.any? do
+        unloaded.each do |path|
+          $logger.debug "loading from #{path}..."
+          load_from path
+          @load_status[path] = true
+        rescue => e
+          @load_status[path] = false
+          $logger.error "could not load plugins from #{path} : #{e.message}"
+          raise
+        end
+      end
 
       call_global_hook :loading_finished
 

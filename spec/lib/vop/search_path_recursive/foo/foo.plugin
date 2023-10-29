@@ -1,0 +1,3 @@
+on :init do |plugin|
+  plugin.op.class.search_path << File.join(File.dirname(__FILE__), '..', '..', 'search_path_recursive_target')
+end
