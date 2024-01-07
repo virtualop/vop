@@ -34,7 +34,8 @@ module Vop
     def initialize(options = {})
       @options = {
         config_path: "/etc/vop",
-        log_level: Logger::INFO
+        log_level: Logger::INFO,
+        no_init: false,
       }.merge(options)
       $logger.level = @options[:log_level]
 
@@ -42,12 +43,11 @@ module Vop
       @loader = PluginLoader.new(self)
       @sorter = DependencyResolver.new(self)
 
-      @load_status = {}
-
       _reset
     end
 
     def clear
+      @load_status = {}
       @plugins = []
       @commands = {}
       @entities = {}
@@ -59,6 +59,7 @@ module Vop
     def _reset
       clear
       load
+      init unless @options[:no_init]
     end
 
     def to_s
@@ -93,26 +94,23 @@ module Vop
       @plugin_config_path ||= File.join(config_path, "plugins.d")
     end
 
+    def search_path_config_dir
+      @search_path_config_dir ||= File.join(config_path, "search_path.d")
+    end
+
     def executor
       @executor ||= Executor.new(self)
     end
 
-    def load_from(locations, load_options = {})
-      found = finder.find(locations)
-      plugins = loader.load(found, load_options)
-      new_plugins = sorter.sort(plugins.loaded)
-
-      new_plugins.each do |plugin|
-        plugin.init
-        self << plugin
-      end
-
-      $logger.debug "loaded #{new_plugins.size} plugins from #{locations}"
-      $logger.debug plugins.loaded.map(&:name)
+    def search_path
+      @assembled_search_path ||= (
+        self.class.search_path +
+        Dir.glob("#{search_path_config_dir}/*").map { |x| File.readlink(x) }
+      )
     end
 
     def unloaded
-      self.class.search_path.reject { |path| @load_status.key? path }
+      search_path.reject { |path| @load_status.key? path }
     end
 
     def load
@@ -131,9 +129,28 @@ module Vop
         end
       end
 
-      call_global_hook :loading_finished
+      # TODO: do we need this?
+      # call_global_hook :loading_finished
+      $logger.debug "loaded : #{@plugins.size} plugins, #{@commands.size} commands"
+    end
 
-      $logger.debug "init complete : #{@plugins.size} plugins, #{@commands.size} commands"
+    def load_from(locations, load_options = {})
+      found = finder.find(locations)
+      plugins = loader.load(found, load_options)
+      new_plugins = sorter.sort(plugins.loaded)
+
+      new_plugins.each do |plugin|
+        plugin.load
+        self << plugin
+      end
+
+      $logger.debug "loaded #{new_plugins.size} plugins from #{locations}"
+      $logger.debug plugins.loaded.map(&:name)
+    end
+
+    def init
+      @plugins.each(&:init)
+      call_global_hook :init_complete
     end
 
     def <<(stuff)

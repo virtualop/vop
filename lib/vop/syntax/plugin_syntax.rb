@@ -42,6 +42,11 @@ module Vop
       end
     end
 
+    def depends_on_gem(gem)
+      $logger.debug "plugin #{@plugin.name} depends on gem #{gem}"
+      @plugin.external_dependencies[:gem] << gem
+    end
+
     def on(hook_sym, &block)
       @plugin.hook(hook_sym, &block)
     end

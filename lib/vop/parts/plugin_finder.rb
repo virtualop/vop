@@ -32,7 +32,6 @@ module Vop
             raise e
           end
 
-
           @plugins += Dir.glob("#{path}/**/*.plugin").map { |x| Pathname.new(File.dirname(x)).realpath.to_s }
           @templates += Dir.glob("#{path}/**/plugin.vop").map { |x| Pathname.new(x).realpath.to_s }
         end

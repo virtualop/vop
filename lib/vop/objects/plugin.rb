@@ -1,4 +1,5 @@
 require "json"
+
 require_relative "../parts/entity_loader"
 require_relative "../parts/command_loader"
 require_relative "../parts/filter_loader"
@@ -9,6 +10,7 @@ module Vop
   class Plugin < ThingWithParams
 
     attr_reader :op
+
     attr_reader :name
     attr_accessor :description
     attr_reader :options
@@ -17,7 +19,9 @@ module Vop
     attr_reader :sources
     attr_reader :state
     attr_reader :config
+
     attr_accessor :dependencies
+    attr_accessor :external_dependencies
 
     def initialize(op, plugin_name, plugin_path, options = {})
       super()
@@ -39,6 +43,7 @@ module Vop
       @config = {}
 
       @dependencies = []
+      @external_dependencies = Hash.new { |h, k| h[k] = [] }
 
       @hooks = {}
     end
@@ -54,19 +59,21 @@ module Vop
       }.to_json()
     end
 
-    def init
+    def load
       $logger.debug "plugin init : #{@name}"
 
       @sources = Hash.new { |h, k| h[k] = {} }
 
       @config = {}
 
-      # call_hook :preload ?
-
       load_helpers
       load_default_config
       load_config
 
+      load_gem_dependencies
+    end
+
+    def init
       # TODO proceed only if auto_load
       call_hook :init
 
@@ -111,6 +118,16 @@ module Vop
       end
       File.open(@config_file_name, "w") do |file|
         file.write @config.to_json()
+      end
+    end
+
+    def load_gem_dependencies
+      gems = @external_dependencies[:gem]
+      return unless gems.any?
+      $logger.info "loading gem dependencies : #{gems}"
+
+      gems.each do |g|
+        require g
       end
     end
 
@@ -202,7 +219,12 @@ module Vop
     def call_hook(name, *args)
       result = nil
       if @hooks.has_key? name
-        result = @hooks[name].call(self, *args)
+        begin
+          result = @hooks[name].call(self, *args)
+        rescue => e
+          $logger.error "hit a problem while running hook #{name} on #{self.name}"
+          raise e
+        end
       end
       result
     end

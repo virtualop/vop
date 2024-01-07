@@ -2,6 +2,7 @@
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "vop/version"
+require "vop/search_path"
 
 Gem::Specification.new do |spec|
   spec.name          = "vop"
@@ -19,6 +20,10 @@ Gem::Specification.new do |spec|
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
+
+  Vop.gem_dependencies.each do |dep|
+    spec.add_dependency dep
+  end
 
   spec.add_dependency "json", "~> 2.3"
   spec.add_dependency "net-ssh"
