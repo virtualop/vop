@@ -10,7 +10,7 @@ require_relative "objects/entity"
 require_relative "objects/entities"
 require_relative "util/errors"
 require_relative "util/pluralizer"
-require_relative "util/worker"
+# require_relative "util/worker"
 
 module Vop
 
@@ -237,10 +237,10 @@ module Vop
       response.result
     end
 
-    def execute_async(request)
-      request.origin ||= @options[:origin]
-      AsyncExecutorWorker.perform_async(request.to_json)
-    end
+    # def execute_async(request)
+    #   request.origin ||= @options[:origin]
+    #   AsyncExecutorWorker.perform_async(request.to_json)
+    # end
 
     def self.search_path
       @search_path
