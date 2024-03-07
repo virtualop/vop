@@ -147,23 +147,24 @@ RSpec.describe Vop do
   end
 
 
-  it "has a worker process that will execute requests asynchronously" do
-    worker = Vop::AsyncExecutorWorker.new
-    request = Vop::Request.new(@vop, "list_commands")
-    worker.perform(request.to_json)
-  end
-
-  it "handles/ignores errors thrown in a worker process" do
-    worker = Vop::AsyncExecutorWorker.new
-    vop = test_vop("fail")
-    request = Vop::Request.new(vop, "fail")
-    worker.perform(request.to_json)
-  end
-
-  it "executes requests asynchronously" do
-    request = Vop::Request.new(@vop, "list_commands")
-    @vop.execute_async(request)
-  end
+  # TODO move to plugins
+  # it "has a worker process that will execute requests asynchronously" do
+  #   worker = Vop::AsyncExecutorWorker.new
+  #   request = Vop::Request.new(@vop, "list_commands")
+  #   worker.perform(request.to_json)
+  # end
+  #
+  # it "handles/ignores errors thrown in a worker process" do
+  #   worker = Vop::AsyncExecutorWorker.new
+  #   vop = test_vop("fail")
+  #   request = Vop::Request.new(vop, "fail")
+  #   worker.perform(request.to_json)
+  # end
+  #
+  # it "executes requests asynchronously" do
+  #   request = Vop::Request.new(@vop, "list_commands")
+  #   @vop.execute_async(request)
+  # end
 
 
   it "loads plugins from the search_path" do

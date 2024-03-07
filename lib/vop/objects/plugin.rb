@@ -70,7 +70,7 @@ module Vop
       load_default_config
       load_config
 
-      load_gem_dependencies
+      load_gem_dependencies unless ENV["VOP_IGNORE_PLUGINS"]
     end
 
     def init
@@ -124,10 +124,12 @@ module Vop
     def load_gem_dependencies
       gems = @external_dependencies[:gem]
       return unless gems.any?
-      $logger.info "loading gem dependencies : #{gems}"
+      $logger.debug "loading gem dependencies : #{gems}"
 
       gems.each do |g|
-        require g
+        gem, options = g
+        gem_name = options[:require] || gem
+        require gem_name
       end
     end
 

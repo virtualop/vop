@@ -10,7 +10,6 @@ require_relative "objects/entity"
 require_relative "objects/entities"
 require_relative "util/errors"
 require_relative "util/pluralizer"
-# require_relative "util/worker"
 
 module Vop
 
@@ -103,10 +102,13 @@ module Vop
     end
 
     def search_path
-      @assembled_search_path ||= (
-        self.class.search_path +
-        Dir.glob("#{search_path_config_dir}/*").map { |x| File.readlink(x) }
-      )
+      unless @assembled_search_path
+        @assembled_search_path = self.class.search_path
+        unless ENV["VOP_IGNORE_PLUGINS"]
+          @assembled_search_path += Dir.glob("#{search_path_config_dir}/*").map { |x| File.readlink(x) }
+        end
+      end
+      @assembled_search_path
     end
 
     def unloaded
@@ -236,11 +238,6 @@ module Vop
       response = execute_request(request)
       response.result
     end
-
-    # def execute_async(request)
-    #   request.origin ||= @options[:origin]
-    #   AsyncExecutorWorker.perform_async(request.to_json)
-    # end
 
     def self.search_path
       @search_path

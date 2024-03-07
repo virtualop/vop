@@ -23,15 +23,9 @@ Gem::Specification.new do |spec|
 
   Vop.gem_dependencies.each do |dep|
     spec.add_dependency dep
-  end
+  end unless ENV["VOP_IGNORE_PLUGINS"]
 
   spec.add_dependency "json", "~> 2.3"
-  spec.add_dependency "net-ssh"
-  spec.add_dependency "ed25519"
-  spec.add_dependency "bcrypt_pbkdf"
-  spec.add_dependency "net-scp"
-  spec.add_dependency "redis"
-  spec.add_dependency "sidekiq"
   spec.add_dependency "terminal-table"
   spec.add_dependency "xml-simple"
   spec.add_dependency "byebug"

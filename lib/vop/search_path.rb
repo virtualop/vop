@@ -5,7 +5,7 @@ module Vop
   def self.gem_dependencies
     @cached_gem_dependencies ||= begin
       vop = ::Vop::Vop.new(no_init: true)
-      vop.plugins.flat_map { |p| p.external_dependencies[:gem] }
+      vop.plugins.flat_map { |p| p.external_dependencies[:gem].map(&:first) }.uniq
     end
   end
 
