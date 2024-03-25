@@ -146,27 +146,6 @@ RSpec.describe Vop do
     }.to raise_error /sanity check failed/
   end
 
-
-  # TODO move to plugins
-  # it "has a worker process that will execute requests asynchronously" do
-  #   worker = Vop::AsyncExecutorWorker.new
-  #   request = Vop::Request.new(@vop, "list_commands")
-  #   worker.perform(request.to_json)
-  # end
-  #
-  # it "handles/ignores errors thrown in a worker process" do
-  #   worker = Vop::AsyncExecutorWorker.new
-  #   vop = test_vop("fail")
-  #   request = Vop::Request.new(vop, "fail")
-  #   worker.perform(request.to_json)
-  # end
-  #
-  # it "executes requests asynchronously" do
-  #   request = Vop::Request.new(@vop, "list_commands")
-  #   @vop.execute_async(request)
-  # end
-
-
   it "loads plugins from the search_path" do
     Vop::Vop.search_path << test_spec_path("search_path")
     expect(test_vop.list_plugins).to include "from_search_path"

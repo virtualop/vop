@@ -18,8 +18,6 @@ module Vop
       root_plugin = Plugin.new(@op, "__root__", nil)
       root_plugin.dependencies = @plugins.keys
 
-      #$logger.debug "root dummy : #{root_plugin}"
-
       resolve(root_plugin, resolved, unresolved)
       resolved.delete_if { |x| x == root_plugin.name }
 
@@ -27,11 +25,9 @@ module Vop
     end
 
     def resolve(plugin, resolved, unresolved, level = 0)
-      #$logger.debug "#{' ' * level}checking dependencies for #{plugin.name}"
       unresolved << plugin.name
 
       plugin.dependencies.each do |dep|
-        #$logger.debug "#{' ' * level}resolving #{dep}"
         already_loaded = @op.plugins.map(&:name).include? dep
         unless already_loaded
           unless resolved.include? dep

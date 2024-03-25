@@ -159,6 +159,7 @@ module Vop
     end
 
     def execute(request)
+      # TODO: use command.dont_log instead?
       blacklist = %w|list_contributors list_contribution_targets collect_contributions machines rails_machines|
       unless blacklist.include? request.command.short_name
         $logger.debug "+++ #{request.command.short_name} (#{request.param_values}) +++"

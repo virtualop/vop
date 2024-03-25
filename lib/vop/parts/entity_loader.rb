@@ -24,7 +24,6 @@ module Vop
     end
 
     def read_sources(named_sources)
-      # reads a hash of <name> => <source string>
       named_sources.each do |name, source|
 
         prepare(name)

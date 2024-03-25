@@ -48,6 +48,10 @@ module Vop
       @hooks = {}
     end
 
+    def auto_load?
+      @options[:auto_load]
+    end
+
     def to_s
       "Vop::Plugin #{name}"
     end

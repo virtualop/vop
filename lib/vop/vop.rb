@@ -151,7 +151,7 @@ module Vop
     end
 
     def init
-      @plugins.each(&:init)
+      @plugins.select(&:auto_load?).each(&:init)
       call_global_hook :init_complete
     end
 
